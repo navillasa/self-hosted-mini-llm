@@ -1,20 +1,27 @@
 from fastapi import FastAPI, Request
 from gpt4all import GPT4All
 import os
+from pathlib import Path
 
 app = FastAPI()
 
-# Load the model from local file
-model_path = "models/Meta-Llama-3-8B-Instruct.Q4_0.gguf"
-model = GPT4All(model_path)
+# Get model name from environment variable, with a fallback
+model_name = os.getenv("MODEL_NAME", "Meta-Llama-3-8B-Instruct.Q4_0.gguf")
 
-@app.post("/chat")
-async def chat(req: Request):
-    body = await req.json()
-    prompt = body.get("prompt", "")
-    max_tokens = body.get("max_tokens", 256)
+# Expand `~` to absolute path
+model_path = Path("~/.cache/gpt4all") / model_name
+model_path = model_path.expanduser()
+
+# Load the model
+model = GPT4All(model_name, model_path=model_path)
+
+@app.post("/generate")
+async def generate_text(request: Request):
+    data = await request.json()
+    prompt = data.get("prompt", "")
+    max_tokens = data.get("max_tokens", 100)
 
     with model.chat_session():
-        output = model.generate(prompt, max_tokens=max_tokens)
-        return {"response": output}
-
+        response = model.generate(prompt, max_tokens=max_tokens)
+    
+    return {"response": response}

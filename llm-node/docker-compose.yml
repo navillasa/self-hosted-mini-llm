@@ -1,12 +1,9 @@
-version: '3.8'
-
 services:
-  llm-node:
-    build: ./llm-node
-    container_name: llm-node
+  llm-api:
+    build: .
     ports:
-      - "8000:8000"
+      - "8080:8080"
     volumes:
-      - ./llm-node/models:/app/models
-    restart: unless-stopped
-
+      - ~/.cache/gpt4all:/root/.cache/gpt4all
+    environment:
+      - MODEL_NAME=Meta-Llama-3-8B-Instruct.Q4_0.gguf
