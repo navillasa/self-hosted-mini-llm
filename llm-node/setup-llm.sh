@@ -5,8 +5,6 @@ set -euo pipefail
 MODEL_FILE="Meta-Llama-3-8B-Instruct.Q4_0.gguf"
 MODEL_URL="https://gpt4all.io/models/gguf/$MODEL_FILE"
 MODEL_DIR="$HOME/.cache/gpt4all"
-REPO_NAME="self-hosted-mini-llm"
-REPO_URL="https://github.com/navillasa/self-hosted-mini-llm.git"
 
 # --- FUNCTIONS ---
 
@@ -55,15 +53,6 @@ install_docker_compose() {
   fi
 }
 
-clone_repo() {
-  if [ ! -d "$REPO_NAME" ]; then
-    echo "📦 Cloning repo..."
-    git clone "$REPO_URL"
-  else
-    echo "📁 Repo already exists. Skipping clone."
-  fi
-}
-
 download_model() {
   echo "🧠 Checking for model..."
   mkdir -p "$MODEL_DIR"
@@ -80,8 +69,18 @@ download_model() {
 
 start_llm_container() {
   echo "🚀 Starting LLM node..."
-  cd "$REPO_NAME/llm-node"
-  docker compose up -d --build
+
+  # Assume we are either in or next to llm-node dir
+  if [ -f "docker-compose.yml" ]; then
+    docker compose up -d --build
+  elif [ -d "llm-node" ]; then
+    cd llm-node
+    docker compose up -d --build
+  else
+    echo "❌ Could not find llm-node directory or docker-compose.yml. Please run this from the right folder."
+    exit 1
+  fi
+
   echo "✅ Containers are starting in the background."
   echo "🔧 Check logs with: docker compose logs -f"
 }
@@ -96,7 +95,6 @@ fi
 
 add_user_to_docker_group
 install_docker_compose
-clone_repo
 download_model
 start_llm_container
 
