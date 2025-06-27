@@ -19,13 +19,20 @@ Deploy the GPT4All-J, a lightweight open-source LLM optimized for CPU, locally u
 3. Tested basic API with curl requests
 
 
-To run:
+Get the model:
+```
+mkdir -p ~/.cache/gpt4all
+cd ~/.cache/gpt4all
+
+wget https://gpt4all.io/models/gguf/Meta-Llama-3-8B-Instruct.Q4_0.gguf
+```
+
+
 
 ```bash
 docker-compose up -d
 ```
 
-The GPT4All API will be available at `http://your_server_ip:8080`.
 
 ## Notes
 

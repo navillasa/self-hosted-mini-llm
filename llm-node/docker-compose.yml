@@ -1,14 +1,12 @@
 version: '3.8'
 
 services:
-  gpt4all:
-    image: runpod/gpt4all
-    container_name: gpt4all
+  llm-node:
+    build: ./llm-node
+    container_name: llm-node
     ports:
-      - "8080:8080"  # adjust port if needed
+      - "8000:8000"
     volumes:
-      - ~/.cache/gpt4all:/root/.cache/gpt4all  # cache dir, optional
-    environment:
-      - MODEL=gpt4all  # specify model if needed by the image
+      - ./llm-node/models:/app/models
     restart: unless-stopped
 
