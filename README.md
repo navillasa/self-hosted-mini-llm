@@ -1,51 +1,68 @@
-# Self-Hosted GPT4All-J LLM Server
+# 🧠 Self-Hosted GPT4All LLM API
 
-Deploy the GPT4All-J, a lightweight open-source LLM optimized for CPU, locally using Docker and Hetzner VPS.
-
----
-
-## Overview
-
-* Provision Hetzner VPS with Terraform
-* Run the model in Docker using the `vllm/vllm-openai` image
-* Serve the model with an OpenAI-compatible API on port 8000
+A lightweight, self-hosted LLM server using [GPT4All-J](https://gpt4all.io/index.html), running entirely on CPU.
 
 ---
 
-## Setup So Far
+## 🛠️ What This Project Does
 
-1. Created Hetzner server with Terraform
-2. Wrote `docker-compose.yml` to run the model
-3. Tested basic API with curl requests
+* Provisions a VPS with Terraform
+* Hosts a quantized LLM model using `gpt4all` (CPU-only)
+* Wraps the model with a REST API via FastAPI
+* Accepts text prompts and returns completions
+* Fully self-contained, offline-capable, no OpenAI dependency
 
+---
 
-Get the model:
+## Current Setup
+
+1. Hetzner VPS provisioned via Terraform
+2. Model downloaded to `~/.cache/gpt4all`
+3. FastAPI app containerized with Docker
+4. Model + API served together via `docker-compose`
+
+---
+
+## Example Request
+
+```bash
+curl -X POST http://localhost:8080/generate \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "What is the capital of France?"}'
 ```
+
+Response:
+
+```json
+{"response":"The capital of France is Paris."}
+```
+
+---
+
+## How to Run
+
+1. Download the model:
+
+```bash
 mkdir -p ~/.cache/gpt4all
 cd ~/.cache/gpt4all
-
 wget https://gpt4all.io/models/gguf/Meta-Llama-3-8B-Instruct.Q4_0.gguf
 ```
 
-
-
-```bash
-docker-compose up -d
-```
-
-
-## Notes
-
-* Cached models will be stored in `~/.cache/gpt4all` on your host machine.
-* Check the container logs for startup status:
+2. Clone the repo and start containers:
 
 ```bash
-docker logs -f gpt4all_j
+git clone https://github.com/navillasa/self-hosted-mini-llm.git
+cd self-hosted-mini-llm/llm-node
+docker-compose up -d --build
 ```
 
-## Next Steps
+---
 
-* Automate Docker install with Terraform
-* Add reverse proxy (Traefik) for auth & HTTPS
-* Setup Prometheus & Grafana for monitoring
-* Implement CI/CD for updates
+## 🔮 Next Steps
+
+* [ ] Add reverse proxy (Traefik) for HTTPS + auth
+* [ ] Add logging & basic monitoring (Prometheus + Grafana)
+* [ ] Write CI tests to validate API response
+* [ ] Auto-deploy updates via CI/CD
+* [ ] Serve via domain name with TLS
