@@ -8,12 +8,11 @@ app = FastAPI()
 # Get model name from environment variable, with a fallback
 model_name = os.getenv("MODEL_NAME", "Meta-Llama-3-8B-Instruct.Q4_0.gguf")
 
-# Expand `~` to absolute path
-model_path = Path("~/.cache/gpt4all") / model_name
-model_path = model_path.expanduser()
+# Directory where models are stored
+model_dir = Path("~/.cache/gpt4all").expanduser()
 
-# Load the model
-model = GPT4All(model_name, model_path=model_path)
+# Load the model (name + path to directory)
+model = GPT4All(model_name, model_path=model_dir)
 
 @app.post("/generate")
 async def generate_text(request: Request):
@@ -23,5 +22,6 @@ async def generate_text(request: Request):
 
     with model.chat_session():
         response = model.generate(prompt, max_tokens=max_tokens)
-    
+
     return {"response": response}
+
