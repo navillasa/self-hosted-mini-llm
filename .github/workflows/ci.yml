@@ -32,15 +32,31 @@ jobs:
       - name: Build and start stack
         run: docker-compose up -d --build
 
-      - name: Wait for API
+      - name: Wait for Traefik
+        run: |
+          for i in {1..60}; do
+            if curl -k -u "$BASIC_AUTH_USER:$BASIC_AUTH_PASS" https://localhost/generate --fail; then
+              echo "Traefik public endpoint is up!"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "❌ Traefik public endpoint did not respond after 2 minutes"
+          docker-compose logs
+          exit 1
+
+      - name: Wait for LLM-API
         run: |
           for i in {1..60}; do
             if curl -s -u "$BASIC_AUTH_USER:$BASIC_AUTH_PASS" http://localhost:8080/generate --fail; then
               echo "API is up!"
-              break
+              exit 0
             fi
             sleep 2
           done
+          echo "❌ API did not respond after 2 minutes"
+          docker-compose logs
+          exit 1
 
       - name: Install test dependencies
         run: pip install httpx
