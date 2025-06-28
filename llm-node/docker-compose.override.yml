@@ -8,6 +8,13 @@ services:
       - "80:80"
     environment:
       - "CI=true"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.traefik.rule: "Host(`traefik.localhost`)"
+      traefik.http.routers.traefik.entrypoints: "web"
+      traefik.http.routers.traefik.tls.certresolver: ""
+      traefik.http.routers.traefik.service: "api@internal"
+      traefik.http.middlewares.auth.basicauth.users: "test:test"
   llm-api:
     labels:
       traefik.enable: "true"
