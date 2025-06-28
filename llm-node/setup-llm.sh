@@ -1,12 +1,24 @@
 #!/bin/bash
 set -euo pipefail
 
+# Check for running in correct location
+if [ ! -f "docker-compose.yml" ]; then
+  if [ -d "$HOME/llm-node" ]; then
+    cd "$HOME/llm-node"
+  elif [ -d "./llm-node" ]; then
+    cd "./llm-node"
+  else
+    echo "❌ Could not find llm-node directory or docker-compose.yml. Please run this from inside or next to the llm-node folder."
+    exit 1
+  fi
+fi
+
+
 # --- SETTINGS ---
 LLM_USER=${1:-llmuser}  # default to 'llmuser' if no argument given
-MODEL_DIR="$HOME/.cache/gpt4all"
 MODEL_FILE="Meta-Llama-3-8B-Instruct.Q4_0.gguf"
 MODEL_URL="https://gpt4all.io/models/gguf/$MODEL_FILE"
-MODEL_DIR="/home/llmuser/.cache/gpt4all"
+MODEL_DIR="$HOME/.cache/gpt4all"
 
 # --- FUNCTIONS ---
 
@@ -56,9 +68,10 @@ install_docker_compose() {
 }
 
 download_model() {
-  echo "🧠 Checking for model..."
+  echo "📂 Model will be downloaded to: $MODEL_DIR"
   mkdir -p "$MODEL_DIR"
   cd "$MODEL_DIR"
+  echo "🧠 Checking for model..."
 
   if [ -f "$MODEL_FILE" ]; then
     echo "✅ Model already exists at $MODEL_DIR/$MODEL_FILE. Skipping download."
@@ -71,18 +84,7 @@ download_model() {
 
 start_llm_container() {
   echo "🚀 Starting LLM node..."
-
-  # Assume we are either in or next to llm-node dir
-  if [ -f "docker-compose.yml" ]; then
-    docker compose up -d --build
-  elif [ -d "llm-node" ]; then
-    cd llm-node
-    docker compose up -d --build
-  else
-    echo "❌ Could not find llm-node directory or docker-compose.yml. Please run this from the right folder."
-    exit 1
-  fi
-
+  docker compose up -d --build
   echo "✅ Containers are starting in the background."
   echo "🔧 Check logs with: docker compose logs -f"
 }
