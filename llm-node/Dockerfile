@@ -12,12 +12,13 @@ RUN adduser --disabled-password --gecos '' llmuser
 
 RUN chown -R llmuser:llmuser /app
 
-# Run as non-root user
-USER llmuser
-
-RUN mkdir -p /home/llmuser/.cache/gpt4all
+RUN mkdir -p /home/llmuser/.cache/gpt4all && chown -R llmuser:llmuser /home/llmuser/.cache
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
+
+# Run as non-root user
+USER llmuser
+
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
