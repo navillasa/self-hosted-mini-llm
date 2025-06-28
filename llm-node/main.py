@@ -1,7 +1,9 @@
 from fastapi import FastAPI, Request
 from gpt4all import GPT4All
-import os
 from pathlib import Path
+import os
+
+TEST_MODE = os.getenv("TEST_MODE", "0") == "1"
 
 app = FastAPI()
 
@@ -18,6 +20,9 @@ model = GPT4All(model_name, model_path=model_dir)
 
 @app.post("/generate")
 async def generate_text(request: Request):
+    if TEST_MODE:
+        return {"response": "mocked response"}
+
     data = await request.json()
     prompt = data.get("prompt", "")
     max_tokens = data.get("max_tokens", 100)

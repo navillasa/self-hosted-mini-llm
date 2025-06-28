@@ -1,0 +1,49 @@
+name: Multi-Container CI
+
+env:
+  BASIC_AUTH_USER: ${{ secrets.BASIC_AUTH_USER }}
+  BASIC_AUTH_PASS: ${{ secrets.BASIC_AUTH_PASS }}
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  integration-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: llm-node
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set TEST_MODE for CI
+        run: echo "TEST_MODE=1" >> .env
+
+      - name: Set up Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+
+      - name: Build and start stack
+        run: docker-compose up -d --build
+
+      - name: Wait for API
+        run: |
+          for i in {1..60}; do
+            if curl -s -u "$BASIC_AUTH_USER:$BASIC_AUTH_PASS" http://localhost:8080/generate --fail; then
+              echo "API is up!"
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Install test dependencies
+        run: pip install httpx
+
+      - name: Run integration test
+        run: python test_main.py
