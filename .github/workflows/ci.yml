@@ -40,6 +40,11 @@ jobs:
           echo "DASH_DOMAIN=${DASH_DOMAIN}" >> .env
           echo "LE_EMAIL=${LE_EMAIL}" >> .env
 
+      - name: Create dummy model file
+        run: |
+          mkdir -p ./test-models
+          touch ./test-models/Meta-LLama-3-8B-Instruct.Q4_0.gguf
+
       - name: Set up Docker Compose
         run: |
           sudo apt-get update
