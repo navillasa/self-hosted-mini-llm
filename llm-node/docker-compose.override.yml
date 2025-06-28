@@ -10,9 +10,12 @@ services:
       - "CI=true"
   llm-api:
     labels:
-      - "traefik.http.routers.llm-api.entrypoints=web"
-      - "traefik.http.routers.llm-api.tls.certresolver="
-      - "traefik.http.routers.llm-api.rule=Host(`llm.localhost`)"
+      traefik.enable: "true"
+      traefik.http.routers.llm-api.entrypoints: "web"
+      traefik.http.routers.llm-api.tls.certresolver: ""
+      traefik.http.routers.llm-api.rule: "Host(`llm.localhost`)"
+      traefik.http.routers.llm-api.middlewares: "auth"
+      traefik.http.services.llm-api.loadbalancer.server.port: "8080"
     volumes:
       - cache_data:/home/llmuser/.cache
 
