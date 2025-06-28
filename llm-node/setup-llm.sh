@@ -4,7 +4,7 @@ set -euo pipefail
 # --- SETTINGS ---
 MODEL_FILE="Meta-Llama-3-8B-Instruct.Q4_0.gguf"
 MODEL_URL="https://gpt4all.io/models/gguf/$MODEL_FILE"
-MODEL_DIR="$HOME/.cache/gpt4all"
+MODEL_DIR="/home/llmuser/.cache/gpt4all"
 
 # --- FUNCTIONS ---
 
