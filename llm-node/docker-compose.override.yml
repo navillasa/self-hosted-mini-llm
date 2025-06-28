@@ -8,3 +8,12 @@ services:
       - "80:80"
     environment:
       - "CI=true"
+  llm-api:
+    labels:
+      - "traefik.http.routers.llm-api.entrypoints=web"
+      - "traefik.http.routers.llm-api.rule=Host(`llm.localhost`)"
+    volumes:
+      - cache_data:/home/llmuser/.cache
+
+volumes:
+  cache_data:
