@@ -51,7 +51,7 @@ jobs:
       - name: Wait for Traefik
         run: |
           for i in {1..15}; do
-        if curl -u "$BASIC_AUTH_USER:$BASIC_AUTH_PASS" -X POST -d '{"prompt": "test"}' -H 'Content-Type: application/json' http://llm.localhost/generate --fail; then
+            if curl -u "$BASIC_AUTH_USER:$BASIC_AUTH_PASS" -X POST -d '{"prompt": "test"}' -H 'Content-Type: application/json' http://llm.localhost/generate --fail; then
               echo "Traefik public endpoint is up!"
               exit 0
             fi
