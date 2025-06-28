@@ -15,7 +15,7 @@ RUN chown -R llmuser:llmuser /app
 RUN mkdir -p /home/llmuser/.cache/gpt4all && chown -R llmuser:llmuser /home/llmuser/.cache
 
 # Need gosu utility in order to drop from root to llmuser in entrypoint
-RUN apt-get update && apt-get install -y gosu && rum -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y gosu && rm -rf /var/lib/apt/lists/*
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
