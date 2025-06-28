@@ -15,4 +15,6 @@ RUN chown -R llmuser:llmuser /app
 # Run as non-root user
 USER llmuser
 
+RUN mkdir -p /home/llmuser/.cache && chown -R llmuser:llmuser /home/llmuser/.cache
+
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
