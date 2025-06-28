@@ -6,39 +6,45 @@ services:
     command:
       - "--api.dashboard=true"
       - "--api.insecure=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencrypt.acme.email=${LE_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
       - "--providers.docker=true"
-      - "--providers.file.filename=/etc/traefik/traefik.yml"
+      - "--log.level=DEBUG"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik.rule=Host(`${DASH_DOMAIN}`)"
       - "traefik.http.routers.traefik.entrypoints=websecure"
       - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
       - "traefik.http.routers.traefik.service=api@internal"
-      - "traefik.http.routers.traefik.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_AUTH_USER}:${TRAEFIK_AUTH_HASH}"
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - "./traefik/traefik.yml:/etc/traefik/traefik.yml"
-      - "./letsencrypt:/letsencrypt"
-    networks:
-      - llm-net
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./letsencrypt:/letsencrypt
     env_file:
       - .env
+    networks:
+      - llm-net
 
   llm-api:
-    build: ./llm-api
+    build: .
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.llm-api.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.llm-api.entrypoints=websecure"
       - "traefik.http.routers.llm-api.tls.certresolver=letsencrypt"
       - "traefik.http.routers.llm-api.middlewares=auth"
-      - "traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_AUTH_USER}:${TRAEFIK_AUTH_HASH}"
+      - "traefik.http.services.llm-api.loadbalancer.server.port=8080"
     networks:
       - llm-net
     expose:
-      - "8000"
+      - "8080"
     volumes:
       - ~/.cache/gpt4all:/home/llmuser/.cache/gpt4all
     env_file:
