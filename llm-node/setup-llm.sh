@@ -2,6 +2,8 @@
 set -euo pipefail
 
 # --- SETTINGS ---
+LLM_USER=${1:-llmuser}  # default to 'llmuser' if no argument given
+MODEL_DIR="$HOME/.cache/gpt4all"
 MODEL_FILE="Meta-Llama-3-8B-Instruct.Q4_0.gguf"
 MODEL_URL="https://gpt4all.io/models/gguf/$MODEL_FILE"
 MODEL_DIR="/home/llmuser/.cache/gpt4all"

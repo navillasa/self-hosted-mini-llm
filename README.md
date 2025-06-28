@@ -62,6 +62,7 @@ You must also update DNS records to point your domain to your server's public IP
 
 ### 5. Run Setup Script
 ```
+chmod +x setup-llm.sh
 ./setup-llm.sh
 ```
 This will build and launch the Docker containers, download the model if needed, and start the API + Traefik reverse proxy.

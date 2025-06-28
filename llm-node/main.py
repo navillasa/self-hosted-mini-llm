@@ -8,10 +8,12 @@ app = FastAPI()
 # Get model name from environment variable, with a fallback
 model_name = os.getenv("MODEL_NAME", "Meta-Llama-3-8B-Instruct.Q4_0.gguf")
 
-# Directory where models are stored
-model_dir = Path("/home/llmuser/.cache/gpt4all").expanduser()
+home_dir = Path(os.getenv("HOME", "/root"))
 
-# Load the model (name + path to directory)
+# Directory where models are stored
+model_dir = home_dir / ".cache" / "gpt4all"
+
+# Load the model
 model = GPT4All(model_name, model_path=model_dir)
 
 @app.post("/generate")
