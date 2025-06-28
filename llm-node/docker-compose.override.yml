@@ -1,0 +1,10 @@
+services:
+  traefik:
+    command:
+      - "--entrypoints.web.address=:80"
+      - "--providers.docker=true"
+      - "--api.dashboard=true"
+    ports:
+      - "80:80"
+    environment:
+      - "CI=true"
