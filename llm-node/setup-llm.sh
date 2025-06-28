@@ -1,18 +1,16 @@
 #!/bin/bash
 set -euo pipefail
 
-# Check for running in correct location
-if [ ! -f "docker-compose.yml" ]; then
-  if [ -d "$HOME/llm-node" ]; then
-    cd "$HOME/llm-node"
-  elif [ -d "./llm-node" ]; then
-    cd "./llm-node"
-  else
-    echo "❌ Could not find llm-node directory or docker-compose.yml. Please run this from inside or next to the llm-node folder."
-    exit 1
-  fi
-fi
+# Move to the script's directory
+cd "$(dirname "$0")"
+echo "📂 Now in: $(pwd)"
 
+START_DIR=$(pwd)
+
+if [ ! -f "docker-compose.yml" ]; then
+  echo "❌ docker-compose.yml not found in: $(pwd)"
+  exit 1
+fi
 
 # --- SETTINGS ---
 LLM_USER=${1:-llmuser}  # default to 'llmuser' if no argument given
@@ -83,6 +81,24 @@ download_model() {
 }
 
 start_llm_container() {
+  # --- Ensure acme.json exists and has correct permissions ---
+  echo "📄 Ensuring acme.json exists with correct permissions..."
+
+  ACME_DIR="./letsencrypt"
+  ACME_FILE="$ACME_DIR/acme.json"
+
+  mkdir -p "$ACME_DIR"
+
+  if [ ! -f "$ACME_FILE" ]; then
+    touch "$ACME_FILE"
+    echo "✅ Created $ACME_FILE"
+  else
+    echo "✅ $ACME_FILE already exists"
+  fi
+
+  chmod 600 "$ACME_FILE"
+  echo "🔐 Set permissions to 600 on $ACME_FILE"
+  cd "$START_DIR"
   echo "🚀 Starting LLM node..."
   docker compose up -d --build
   echo "✅ Containers are starting in the background."
@@ -103,4 +119,5 @@ download_model
 start_llm_container
 
 echo "🎉 Done! Your LLM server should now be up and running."
+
 
