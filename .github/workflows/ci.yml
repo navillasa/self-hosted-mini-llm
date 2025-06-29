@@ -46,7 +46,7 @@ jobs:
           touch ./test-models/Meta-Llama-3-8B-Instruct.Q4_0.gguf
 
       - name: Build and start stack
-        run: docker-compose up -d --build
+        run: docker compose up -d --build
 
       - name: Wait for Traefik public endpoint
         run: |
