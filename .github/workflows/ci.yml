@@ -43,12 +43,7 @@ jobs:
       - name: Create dummy model file
         run: |
           mkdir -p ./test-models
-          touch ./test-models/Meta-LLama-3-8B-Instruct.Q4_0.gguf
-
-      - name: Set up Docker Compose
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker-compose
+          touch ./test-models/Meta-Llama-3-8B-Instruct.Q4_0.gguf
 
       - name: Build and start stack
         run: docker-compose up -d --build
@@ -78,6 +73,24 @@ jobs:
           echo "❌ API did not respond after 15 seconds"
           docker-compose logs llm-api
           exit 1
+
+      - name: Dump logs and check for expected errors
+        if: always()
+        run: |
+          docker compose logs --no-color traefik llm-api > logs.txt
+          cat logs.txt
+
+          # Allow expected model error, fail on anything else
+          if grep -q "Unsupported file format" logs.txt; then
+            echo "✅ Model load failed as expected in CI (dummy file used)."
+            exit 0
+          elif grep -q "gguf_init_from_file" logs.txt; then
+            echo "✅ Model GGUF init error as expected in CI."
+            exit 0
+          else
+            echo "❌ Unexpected error. See above logs."
+            exit 1
+          fi
 
       - name: Install test dependencies
         run: pip install httpx
