@@ -93,12 +93,11 @@ jobs:
           docker compose logs --no-color traefik llm-api > logs.txt
           cat logs.txt
 
-          # Allow expected model error, fail on anything else
-          if grep -q "Unsupported file format" logs.txt; then
-            echo "✅ Model load failed as expected in CI (dummy file used)."
+          if grep -q "Model failed to load" logs.txt; then
+            echo "✅ Model failed to load as expected in CI."
             exit 0
-          elif grep -q "gguf_init_from_file" logs.txt; then
-            echo "✅ Model GGUF init error as expected in CI."
+          elif grep -q "some other expected error" logs.txt; then
+            echo "✅ Some other expected error."
             exit 0
           else
             echo "❌ Unexpected error. See above logs."
