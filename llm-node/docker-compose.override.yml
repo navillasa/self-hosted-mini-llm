@@ -2,11 +2,11 @@ services:
   traefik:
     command:
       - "--api.dashboard=true"
-      - "--entrypoints.web.address=:80"
       - "--providers.docker=true"
       - "--log.level=DEBUG"
+      - "--entrypoints.web.address=:8888"
     ports:
-      - "8888:80"  # Traefik (and dashboard) on 8888 in CI
+      - "8888:8888"  # Traefik (and dashboard) on 8888 in CI
     environment:
       - CI=true
     labels:
