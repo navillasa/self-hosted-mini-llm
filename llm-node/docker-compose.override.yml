@@ -11,7 +11,7 @@ services:
       - CI=true
     labels:
       traefik.enable: "true"
-      traefik.http.routers.traefik.rule: "Host(`traefik.localhost`)"
+      traefik.http.routers.llm-api.rule: Host(`llm.localhost`) && PathPrefix(`/`)
       traefik.http.routers.traefik.entrypoints: "web"
       traefik.http.routers.traefik.service: "api@internal"
       traefik.http.middlewares.auth.basicauth.users: "test:$$2y$$05$$CCzkojS4y6IlVay49IP3qutwo05Q7AnTTW.TXsimWa/yvKbaRR/AC"
