@@ -20,6 +20,8 @@ services:
       traefik.http.routers.dashboard.entrypoints: "web"
       traefik.http.routers.dashboard.service: "api@internal"
       traefik.http.routers.dashboard.middlewares: "auth"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
 
 
   llm-api:
