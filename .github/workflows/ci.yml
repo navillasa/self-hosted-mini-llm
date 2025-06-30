@@ -114,22 +114,6 @@ jobs:
           docker compose logs llm-api
           exit 1
 
-      - name: Dump logs and check for expected errors
-        if: always()
-        run: |
-          docker compose logs --no-color traefik llm-api > logs.txt
-          cat logs.txt
-
-          if grep -q "Model failed to load" logs.txt; then
-            echo "✅ Model failed to load as expected in CI."
-            exit 0
-          elif grep -q "some other expected error" logs.txt; then
-            echo "✅ Some other expected error."
-            exit 0
-          else
-            echo "❌ Unexpected error. See above logs."
-            exit 1
-
       - name: Install test dependencies
         run: pip install httpx
 
