@@ -2,6 +2,7 @@ services:
   traefik:
     command:
       - "--api.dashboard=true"
+      - "--accesslog=true"
       - "--providers.docker=true"
       - "--log.level=DEBUG"
       - "--entrypoints.web.address=:8888"
@@ -11,7 +12,10 @@ services:
       - CI=true
     labels:
       traefik.enable: "true"
-      traefik.http.routers.llm-api.rule: Host(`llm.localhost`) && PathPrefix(`/`)
+      traefik.http.routers.llm-api.rule: Host(`llm.localhost`)
+      traefik.http.routers.catchall.rule: PathPrefix(`/`)
+      traefik.http.routers.catchall.entrypoints: "web"
+      traefik.http.routers.catchall.service: "api@internal"
       traefik.http.routers.traefik.entrypoints: "web"
       traefik.http.routers.traefik.service: "api@internal"
       traefik.http.middlewares.auth.basicauth.users: "test:$$2y$$05$$CCzkojS4y6IlVay49IP3qutwo05Q7AnTTW.TXsimWa/yvKbaRR/AC"
