@@ -83,7 +83,7 @@ jobs:
       - name: Wait for Traefik public endpoint
         run: |
           for i in {1..15}; do
-            if curl -u test:test \
+            if curl -v -u test:test \
               -X POST \
               -d '{"prompt": "test"}' \
               -H 'Content-Type: application/json' \

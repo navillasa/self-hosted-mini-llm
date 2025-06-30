@@ -27,6 +27,7 @@ async def health():
 
 class GenerateRequest(BaseModel):
     prompt: str
+    max_tokens: int = 100
 
 @app.post("/generate")
 async def generate(request: GenerateRequest):
@@ -36,9 +37,7 @@ async def generate(request: GenerateRequest):
         raise HTTPException(status_code=503, detail="Model not loaded")
 
     try:
-        data = await request.json()
-        prompt = data.get("prompt", "")
-        max_tokens = data.get("max_tokens", 100)
+        prompt = request.prompt
 
         with model.chat_session():
             response = model.generate(prompt, max_tokens=max_tokens)
