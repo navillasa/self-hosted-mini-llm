@@ -51,7 +51,6 @@ jobs:
       - name: Build and start stack
         run: |
           docker compose up -d --build
-          sudo lsof -i :80 || true  # Just show open processes on port 80
 
       - name: Check FastAPI endpoint directly
         run: |
@@ -70,7 +69,7 @@ jobs:
       - name: Confirm Router Loaded in Traefik
         run: |
           for i in {1..15}; do
-        if curl --fail -u test:test -H "Host: traefik.localhost" http://localhost:8888/dashboard/; then
+            if curl --fail -u test:test -H "Host: traefik.localhost" http://localhost:8888/dashboard/; then
               echo "Traefik dashboard is up!"
               exit 0
             fi
