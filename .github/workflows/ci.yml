@@ -2,13 +2,13 @@ name: Multi-Container CI
 
 env:
   CI: "true"
-  BASIC_AUTH_USER: ${{ secrets.BASIC_AUTH_USER }}
-  BASIC_AUTH_PASS: ${{ secrets.BASIC_AUTH_PASS }}
-  TRAEFIK_AUTH_USER: ${{ secrets.BASIC_AUTH_USER }}
-  TRAEFIK_AUTH_HASH: ${{ secrets.BASIC_AUTH_HASH }}
-  LE_EMAIL: ${{ secrets.LE_EMAIL }}
-  DOMAIN: ${{ vars.DOMAIN }}
-  DASH_DOMAIN: ${{ vars.DASH_DOMAIN }}
+  BASIC_AUTH_USER: test
+  BASIC_AUTH_PASS: test
+  TRAEFIK_AUTH_USER: test
+  TRAEFIK_AUTH_HASH: test
+  LE_EMAIL: test@example.com
+  DOMAIN: llm.localhost
+  DASH_DOMAIN: traefik.localhost
 
 on:
   push:
@@ -33,15 +33,15 @@ jobs:
       - name: Sanity check config
         run: docker compose config
 
-      - name: Write .env file from secrets
+      - name: Write .env file for CI
         run: |
-          echo "BASIC_AUTH_USER=${BASIC_AUTH_USER}" >> .env
-          echo "BASIC_AUTH_PASS=${BASIC_AUTH_PASS}" >> .env
-          echo "TRAEFIK_AUTH_USER=${BASIC_AUTH_USER}" >> .env
-          echo "TRAEFIK_AUTH_HASH=${BASIC_AUTH_HASH}" >> .env
-          echo "DOMAIN=${DOMAIN}" >> .env
-          echo "DASH_DOMAIN=${DASH_DOMAIN}" >> .env
-          echo "LE_EMAIL=${LE_EMAIL}" >> .env
+          echo "BASIC_AUTH_USER=test" >> .env
+          echo "BASIC_AUTH_PASS=test" >> .env
+          echo "TRAEFIK_AUTH_USER=test" >> .env
+          echo "TRAEFIK_AUTH_HASH=test" >> .env
+          echo "DOMAIN=llm.localhost" >> .env
+          echo "DASH_DOMAIN=traefik.localhost" >> .env
+          echo "LE_EMAIL=test@example.com" >> .env
 
       - name: Create dummy model file
         run: |
@@ -51,7 +51,7 @@ jobs:
       - name: Build and start stack
         run: |
           docker compose up -d --build
-          sudo lsof -i :80
+          sudo lsof -i :80 || true  # Just show open processes on port 80
 
       - name: Check FastAPI endpoint directly
         run: |
@@ -61,6 +61,7 @@ jobs:
               exit 0
             fi
             docker compose logs --no-color traefik
+            sleep 2
           done
 
           echo "❌ Endpoint did not respond after 15 attempts"
@@ -69,7 +70,7 @@ jobs:
       - name: Confirm Router Loaded in Traefik
         run: |
           for i in {1..15}; do
-            if curl --fail -H "Host: traefik.localhost" http://traefik.localhost:8888/dashboard/; then
+        if curl --fail -u test:test -H "Host: traefik.localhost" http://localhost:8888/dashboard/; then
               echo "Traefik dashboard is up!"
               exit 0
             fi
@@ -83,17 +84,12 @@ jobs:
       - name: Wait for Traefik public endpoint
         run: |
           for i in {1..15}; do
-            if curl -v http://localhost:8888; then
-              echo "Endpoint is up! (localhost:8888)"
-            fi
-            docker compose logs --no-color traefik
-
             if curl -u test:test \
               -X POST \
               -d '{"prompt": "test"}' \
               -H 'Content-Type: application/json' \
               -H 'Host: llm.localhost' \
-              http://localhost/generate --fail; then
+              http://localhost:8888/generate --fail; then
                 echo "Traefik public endpoint is up!"
                 exit 0
             else
@@ -134,7 +130,6 @@ jobs:
           else
             echo "❌ Unexpected error. See above logs."
             exit 1
-          fi
 
       - name: Install test dependencies
         run: pip install httpx

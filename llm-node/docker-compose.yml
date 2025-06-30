@@ -12,13 +12,6 @@ services:
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
       - "--providers.docker=true"
       - "--log.level=DEBUG"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.traefik.rule=Host(`${DASH_DOMAIN}`)"
-      - "traefik.http.routers.traefik.entrypoints=websecure"
-      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.traefik.service=api@internal"
-      - "traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_AUTH_USER}:${TRAEFIK_AUTH_HASH}"
     ports:
       - "80:80"
       - "443:443"
@@ -29,18 +22,16 @@ services:
       - .env
     networks:
       - llm-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`${DASH_DOMAIN}`)"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_AUTH_USER}:${TRAEFIK_AUTH_HASH}"
 
   llm-api:
     build: .
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.llm-api.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.llm-api.entrypoints=websecure"
-      - "traefik.http.routers.llm-api.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.llm-api.middlewares=auth"
-      - "traefik.http.services.llm-api.loadbalancer.server.port=8080"
-    networks:
-      - llm-net
     expose:
       - "8080"
     volumes:
@@ -49,6 +40,15 @@ services:
       - .env
     environment:
       - TEST_MODE=${TEST_MODE:-0}
+    networks:
+      - llm-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.llm-api.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.llm-api.entrypoints=websecure"
+      - "traefik.http.routers.llm-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.llm-api.middlewares=auth"
+      - "traefik.http.services.llm-api.loadbalancer.server.port=8080"
 
 networks:
   llm-net:

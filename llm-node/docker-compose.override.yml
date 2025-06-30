@@ -1,32 +1,38 @@
 services:
   traefik:
     command:
+      - "--api.dashboard=true"
       - "--entrypoints.web.address=:80"
       - "--providers.docker=true"
-      - "--api.dashboard=true"
+      - "--log.level=DEBUG"
     ports:
-      - "8888:80"
+      - "8888:80"  # Traefik (and dashboard) on 8888 in CI
     environment:
-      - "CI=true"
+      - CI=true
     labels:
       traefik.enable: "true"
       traefik.http.routers.traefik.rule: "Host(`traefik.localhost`)"
       traefik.http.routers.traefik.entrypoints: "web"
-      traefik.http.routers.traefik.tls.certresolver: ""
       traefik.http.routers.traefik.service: "api@internal"
       traefik.http.middlewares.auth.basicauth.users: "test:test"
+      traefik.http.routers.traefik.tls.certresolver: ""
+
   llm-api:
-    labels:
-      traefik.enable: "true"
-      traefik.http.routers.llm-api.entrypoints: "web"
-      traefik.http.routers.llm-api.tls.certresolver: ""
-      traefik.http.routers.llm-api.rule: "Host(`llm.localhost`)"
-      traefik.http.routers.llm-api.middlewares: "auth"
-      traefik.http.services.llm-api.loadbalancer.server.port: "8080"
-    volumes:
-      - ./test-models/Meta-Llama-3-8B-Instruct.Q4_0.gguf:/home/llmuser/.cache/gpt4all/Meta-Llama-3-8B-Instruct.Q4_0.gguf
+    expose:
+      - "8080"
     ports:
       - "8080:8080"
+    environment:
+      - TEST_MODE=1
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.llm-api.rule: "Host(`llm.localhost`)"
+      traefik.http.routers.llm-api.entrypoints: "web"
+      traefik.http.routers.llm-api.middlewares: "auth"
+      traefik.http.services.llm-api.loadbalancer.server.port: "8080"
+      traefik.http.routers.llm-api.tls.certresolver: ""
+    volumes:
+      - ./test-models/Meta-Llama-3-8B-Instruct.Q4_0.gguf:/home/llmuser/.cache/gpt4all/Meta-Llama-3-8B-Instruct.Q4_0.gguf
 
-volumes:
-  cache_data:
+networks:
+  llm-net:
