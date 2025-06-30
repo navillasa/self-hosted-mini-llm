@@ -69,7 +69,7 @@ jobs:
       - name: Confirm Router Loaded in Traefik
         run: |
           for i in {1..15}; do
-            if curl --fail -u test:test -H "Host: traefik.localhost" http://localhost:8888/dashboard/; then
+            if curl --fail -u test:test http://localhost:8888/dashboard/; then
               echo "Traefik dashboard is up!"
               exit 0
             fi
