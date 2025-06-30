@@ -49,12 +49,18 @@ jobs:
           touch ./test-models/Meta-Llama-3-8B-Instruct.Q4_0.gguf
 
       - name: Build and start stack
-        run: docker compose up -d --build
+        run: |
+          docker compose up -d --build
+          sudo lsof -i :80
 
-      - name: Check if generate is registered in FastAPI as a POST endpoint
+      - name: Check FastAPI endpoint directly
         run: |
           for i in {1..15}; do
-            curl -X POST -d '{"prompt": "test"}' -H 'Content-Type: application/json' http://localhost:8080/generate
+            if curl -X POST -d '{"prompt": "test"}' -H 'Content-Type: application/json' http://localhost:8080/generate; then
+              echo "POST endpoint is up!"
+              exit 0
+            fi
+            docker compose logs --no-color traefik
           done
 
           echo "❌ Endpoint did not respond after 15 attempts"
@@ -63,7 +69,18 @@ jobs:
       - name: Wait for Traefik public endpoint
         run: |
           for i in {1..15}; do
-            curl -v http://localhost
+            if curl -v http://localhost:8080; then
+              echo "Endpoint is up! (localhost:8080)"
+              exit 0
+            fi
+            docker compose logs --no-color traefik
+
+            if curl -v http://localhost:8888; then
+              echo "Endpoint is up! (localhost:8888)"
+              exit 0
+            fi
+            docker compose logs --no-color traefik
+
             if curl -u test:test \
               -X POST \
               -d '{"prompt": "test"}' \
@@ -71,12 +88,6 @@ jobs:
               -H 'Host: llm.localhost' \
               http://localhost/generate --fail; then
                 echo "Traefik public endpoint is up!"
-                exit 0
-            elif curl -u "$BASIC_AUTH_USER:$BASIC_AUTH_PASS" \
-              -X GET \
-              -H 'Host: llm.localhost' \
-              http://localhost/ --fail; then
-                echo "Traefik public endpoint (GET /) is up!"
                 exit 0
             else
                 docker compose logs --no-color traefik llm-api

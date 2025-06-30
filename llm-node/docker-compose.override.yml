@@ -5,7 +5,7 @@ services:
       - "--providers.docker=true"
       - "--api.dashboard=true"
     ports:
-      - "80:80"
+      - "8888:80"
     environment:
       - "CI=true"
     labels:
@@ -25,6 +25,8 @@ services:
       traefik.http.services.llm-api.loadbalancer.server.port: "8080"
     volumes:
       - ./test-models/Meta-Llama-3-8B-Instruct.Q4_0.gguf:/home/llmuser/.cache/gpt4all/Meta-Llama-3-8B-Instruct.Q4_0.gguf
+    ports:
+      - "8080:8080"
 
 volumes:
   cache_data:
