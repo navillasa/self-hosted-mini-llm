@@ -44,10 +44,6 @@ services:
       - llm-net
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.llm-api.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.llm-api.entrypoints=websecure"
-      - "traefik.http.routers.llm-api.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.llm-api.middlewares=auth"
       - "traefik.http.services.llm-api.loadbalancer.server.port=8080"
 
 networks:
