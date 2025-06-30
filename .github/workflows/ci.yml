@@ -115,7 +115,7 @@ jobs:
           exit 1
 
       - name: Install test dependencies
-        run: pip install httpx
+        run: pip install -r requirements-test.txt
 
       - name: Run integration test
         run: python test_main.py
