@@ -30,6 +30,9 @@ jobs:
       - name: Set TEST_MODE for CI
         run: echo "TEST_MODE=1" >> .env
 
+      - name: Sanity check config
+        run: docker compose config
+
       - name: Write .env file from secrets
         run: |
           echo "BASIC_AUTH_USER=${BASIC_AUTH_USER}" >> .env
