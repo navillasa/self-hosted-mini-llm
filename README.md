@@ -258,7 +258,7 @@ services:
 - [ ] Log aggregation (ELK stack)
 
 ### CI/CD Pipeline
-- [ ] GitHub Actions for automated testing
+- [x] GitHub Actions for automated testing
 - [ ] Container vulnerability scanning
 - [ ] Automated deployment on code changes
 - [ ] Infrastructure drift detection
