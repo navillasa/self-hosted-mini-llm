@@ -119,5 +119,12 @@ download_model
 start_llm_container
 
 echo "🎉 Done! Your LLM server should now be up and running."
+echo ""
+echo "📊 Monitoring Dashboard URLs:"
+echo "- Grafana: https://monitoring.${DOMAIN:-your-domain.com}"
+echo "- Prometheus: https://prometheus.${DOMAIN:-your-domain.com}"
+echo "- API Metrics: https://${DOMAIN:-your-domain.com}/metrics"
+echo ""
+echo "Default Grafana login: admin / (see GRAFANA_PASSWORD in .env)"
 
 
