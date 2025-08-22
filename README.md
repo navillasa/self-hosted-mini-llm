@@ -149,7 +149,6 @@ The API exports the following Prometheus metrics:
 - `llm_memory_usage_bytes` - Memory consumption
 
 ### Grafana Dashboard
-Access the monitoring dashboard at `https://monitoring.your-domain.com`:
 - **API Performance**: Request rates, response times, error rates
 - **System Resources**: CPU, memory, and storage utilization
 - **Model Metrics**: Inference latency and token generation rates
@@ -163,7 +162,7 @@ Access the monitoring dashboard at `https://monitoring.your-domain.com`:
 
 ### Response Times
 - **Cold start**: 2-3 seconds (model loading)
-- **Warm inference**: 200-500ms per token (CPU-only, quite slow!)
+- **Warm inference**: 200-500ms per token (CPU-only, very slow!)
 - **Concurrent requests**: 2-4 optimal (single CPU core limitation)
 
 ### Cost Analysis
