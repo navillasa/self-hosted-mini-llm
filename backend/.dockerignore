@@ -1,0 +1,14 @@
+# Don't copy secrets
+.env
+
+# Python cache files
+__pycache__
+*.pyc
+
+# Virtual environments
+venv/
+.venv/
+
+# Git
+.git
+.gitignore
