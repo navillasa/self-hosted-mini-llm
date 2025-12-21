@@ -1,0 +1,284 @@
+name: CI - Build and Test Images
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CI: "true"
+
+jobs:
+  # Job 1: Build and test backend Docker image
+  test-backend:
+    name: Build and Test Backend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install test dependencies
+        working-directory: ./backend
+        run: |
+          pip install -r requirements-test.txt
+
+      - name: Run backend unit tests
+        working-directory: ./backend
+        env:
+          TEST_MODE: "1"
+          JWT_SECRET_KEY: "test-secret-key-for-ci"
+          GITHUB_CLIENT_ID: "test-client-id"
+          GITHUB_CLIENT_SECRET: "test-client-secret"
+          FRONTEND_URL: "http://localhost:3000"
+        run: |
+          pytest test_api.py -v --tb=short
+
+      - name: Build backend Docker image
+        working-directory: ./backend
+        run: |
+          docker build -t mini-llm-backend:test .
+
+      - name: Run backend container
+        run: |
+          docker run -d \
+            --name backend-test \
+            -p 8000:8000 \
+            -e TEST_MODE=1 \
+            -e JWT_SECRET_KEY=test-secret-key-for-ci \
+            -e GITHUB_CLIENT_ID=test-client-id \
+            -e GITHUB_CLIENT_SECRET=test-client-secret \
+            -e FRONTEND_URL=http://localhost:3000 \
+            mini-llm-backend:test
+
+      - name: Wait for backend to be ready
+        run: |
+          echo "Waiting for backend to start..."
+          for i in {1..30}; do
+            if curl -f http://localhost:8000/health; then
+              echo "✅ Backend is ready!"
+              exit 0
+            fi
+            echo "Attempt $i/30 - Backend not ready yet, waiting..."
+            sleep 2
+          done
+          echo "❌ Backend did not become ready in time"
+          docker logs backend-test
+          exit 1
+
+      - name: Test backend health endpoint
+        run: |
+          response=$(curl -s http://localhost:8000/health)
+          echo "Health response: $response"
+          if echo "$response" | grep -q '"status":"ok"'; then
+            echo "✅ Health check passed"
+          else
+            echo "❌ Health check failed"
+            exit 1
+          fi
+
+      - name: Test backend root endpoint
+        run: |
+          response=$(curl -s http://localhost:8000/)
+          echo "Root response: $response"
+          if echo "$response" | grep -q '"name":"Mini LLM API with GitHub OAuth"'; then
+            echo "✅ Root endpoint test passed"
+          else
+            echo "❌ Root endpoint test failed"
+            exit 1
+          fi
+
+      - name: Test backend metrics endpoint
+        run: |
+          response=$(curl -s http://localhost:8000/metrics)
+          if echo "$response" | grep -q "llm_requests_total"; then
+            echo "✅ Metrics endpoint test passed"
+          else
+            echo "❌ Metrics endpoint test failed"
+            exit 1
+          fi
+
+      - name: Show backend logs on failure
+        if: failure()
+        run: docker logs backend-test
+
+      - name: Cleanup backend container
+        if: always()
+        run: docker rm -f backend-test || true
+
+  # Job 2: Build and test frontend Docker image
+  test-frontend:
+    name: Build and Test Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create frontend .env file
+        working-directory: ./frontend
+        run: |
+          echo "VITE_API_URL=http://localhost:8000" > .env
+
+      - name: Build frontend Docker image
+        working-directory: ./frontend
+        run: |
+          docker build -t mini-llm-frontend:test .
+
+      - name: Verify frontend image was built
+        run: |
+          docker images | grep mini-llm-frontend
+
+      - name: Run frontend container
+        run: |
+          docker run -d \
+            --name frontend-test \
+            -p 3000:80 \
+            mini-llm-frontend:test
+
+      - name: Wait for frontend to be ready
+        run: |
+          echo "Waiting for frontend to start..."
+          for i in {1..30}; do
+            if curl -f http://localhost:3000/; then
+              echo "✅ Frontend is ready!"
+              exit 0
+            fi
+            echo "Attempt $i/30 - Frontend not ready yet, waiting..."
+            sleep 2
+          done
+          echo "❌ Frontend did not become ready in time"
+          docker logs frontend-test
+          exit 1
+
+      - name: Test frontend serves index.html
+        run: |
+          response=$(curl -s http://localhost:3000/)
+          if echo "$response" | grep -q "<!DOCTYPE html>"; then
+            echo "✅ Frontend serves HTML correctly"
+          else
+            echo "❌ Frontend does not serve HTML"
+            echo "Response: $response"
+            exit 1
+          fi
+
+      - name: Test frontend nginx configuration
+        run: |
+          # Test that SPA routing works (should return index.html for any route)
+          response=$(curl -s http://localhost:3000/some-random-path)
+          if echo "$response" | grep -q "<!DOCTYPE html>"; then
+            echo "✅ Frontend SPA routing works correctly"
+          else
+            echo "❌ Frontend SPA routing failed"
+            exit 1
+          fi
+
+      - name: Show frontend logs on failure
+        if: failure()
+        run: docker logs frontend-test
+
+      - name: Cleanup frontend container
+        if: always()
+        run: docker rm -f frontend-test || true
+
+  # Job 3: Integration test (optional - runs both together)
+  integration-test:
+    name: Integration Test
+    runs-on: ubuntu-latest
+    needs: [test-backend, test-frontend]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create frontend .env file
+        working-directory: ./frontend
+        run: |
+          echo "VITE_API_URL=http://localhost:8000" > .env
+
+      - name: Build both images
+        run: |
+          docker build -t mini-llm-backend:test ./backend
+          docker build -t mini-llm-frontend:test ./frontend
+
+      - name: Create Docker network
+        run: docker network create mini-llm-network
+
+      - name: Run backend container
+        run: |
+          docker run -d \
+            --name backend \
+            --network mini-llm-network \
+            -p 8000:8000 \
+            -e TEST_MODE=1 \
+            -e JWT_SECRET_KEY=test-secret-key-for-ci \
+            -e GITHUB_CLIENT_ID=test-client-id \
+            -e GITHUB_CLIENT_SECRET=test-client-secret \
+            -e FRONTEND_URL=http://localhost:3000 \
+            mini-llm-backend:test
+
+      - name: Run frontend container
+        run: |
+          docker run -d \
+            --name frontend \
+            --network mini-llm-network \
+            -p 3000:80 \
+            mini-llm-frontend:test
+
+      - name: Wait for services to be ready
+        run: |
+          echo "Waiting for backend..."
+          for i in {1..30}; do
+            if curl -f http://localhost:8000/health; then
+              echo "✅ Backend ready"
+              break
+            fi
+            sleep 2
+          done
+
+          echo "Waiting for frontend..."
+          for i in {1..30}; do
+            if curl -f http://localhost:3000/; then
+              echo "✅ Frontend ready"
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Test backend-frontend integration
+        run: |
+          # Test that frontend can be accessed
+          frontend_response=$(curl -s http://localhost:3000/)
+          if ! echo "$frontend_response" | grep -q "<!DOCTYPE html>"; then
+            echo "❌ Frontend not accessible"
+            exit 1
+          fi
+
+          # Test that backend API is accessible
+          backend_response=$(curl -s http://localhost:8000/health)
+          if ! echo "$backend_response" | grep -q '"status":"ok"'; then
+            echo "❌ Backend not accessible"
+            exit 1
+          fi
+
+          echo "✅ Integration test passed - both services are running and accessible"
+
+      - name: Show logs on failure
+        if: failure()
+        run: |
+          echo "=== Backend logs ==="
+          docker logs backend || true
+          echo "=== Frontend logs ==="
+          docker logs frontend || true
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker rm -f backend frontend || true
+          docker network rm mini-llm-network || true
