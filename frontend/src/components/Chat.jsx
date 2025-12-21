@@ -120,7 +120,7 @@ export default function Chat({ user, onLogout }) {
                 <div
                   className={`max-w-3xl rounded-lg px-4 py-3 ${
                     message.role === 'user'
-                      ? 'bg-purple-600 text-white'
+                      ? 'bg-blue-500 text-white'
                       : message.role === 'error'
                       ? 'bg-red-900 text-red-200'
                       : 'bg-gray-800 text-gray-100'
@@ -161,12 +161,12 @@ export default function Chat({ user, onLogout }) {
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="Ask anything..."
               disabled={loading}
-              className="flex-1 bg-gray-900 text-white rounded-lg px-4 py-3 border border-gray-700 focus:outline-none focus:border-purple-500 disabled:opacity-50"
+              className="flex-1 bg-gray-900 text-white rounded-lg px-4 py-3 border border-gray-700 focus:outline-none focus:border-blue-400 disabled:opacity-50"
             />
             <button
               type="submit"
               disabled={loading || !prompt.trim()}
-              className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-3 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Send
             </button>
