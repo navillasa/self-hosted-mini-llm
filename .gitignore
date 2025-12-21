@@ -5,4 +5,7 @@ terraform.tfstate.backup
 .terraform.lock.hcl
 .terraform/
 models
+node_modules
+__pycache__
+venv
 SETUP.md
