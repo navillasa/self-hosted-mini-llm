@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mini-llm-dev
+  labels:
+    name: mini-llm-dev
+    environment: dev
