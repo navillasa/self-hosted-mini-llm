@@ -332,10 +332,21 @@ jobs:
           done
 
           echo "Waiting for frontend..."
+          echo "Checking if frontend container is running..."
+          docker ps | grep frontend
+          echo "Frontend container logs:"
+          docker logs frontend
+
           for i in {1..30}; do
             if curl -f http://localhost:3000/; then
               echo "✅ Frontend ready"
               break
+            fi
+            echo "Attempt $i/30 failed, checking container status..."
+            if ! docker ps | grep -q frontend; then
+              echo "❌ Frontend container stopped! Logs:"
+              docker logs frontend
+              exit 1
             fi
             sleep 2
           done
