@@ -4,21 +4,21 @@ kind: Kustomization
 namespace: mini-llm-dev
 
 resources:
-  - namespace.yaml
-  - ../../base
+- namespace.yaml
+- ../../base
 
 patches:
-  - path: ingress-patch.yaml
+- path: ingress-patch.yaml
 
 labels:
-  - pairs:
-      environment: dev
-      cluster: microk8s
+- pairs:
+    cluster: microk8s
+    environment: dev
 
 images:
-  - name: mini-llm-backend
-    newName: ghcr.io/navillasa/mini-llm-backend
-    newTag: v1.0.0
-  - name: mini-llm-frontend
-    newName: ghcr.io/navillasa/mini-llm-frontend
-    newTag: v1.0.0
+- name: mini-llm-backend
+  newName: ghcr.io/navillasa/mini-llm-backend
+  newTag: d7db902
+- name: mini-llm-frontend
+  newName: ghcr.io/navillasa/mini-llm-frontend
+  newTag: d7db902
