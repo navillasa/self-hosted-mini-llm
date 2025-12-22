@@ -24,7 +24,7 @@ spec:
         image: mini-llm-frontend
         imagePullPolicy: Always
         ports:
-        - containerPort: 80
+        - containerPort: 8080
           name: http
         startupProbe:
           httpGet:
