@@ -32,6 +32,8 @@ spec:
         env:
           - name: HOME
             value: /home/app
+          - name: NODE_OPTIONS
+            value: "--dns-result-order=ipv4first"
         volumeMounts:
           - name: model-cache
             mountPath: /home/app/.cache
@@ -40,11 +42,6 @@ spec:
         ports:
         - containerPort: 8000
           name: http
-        env:
-        - name: NODE_OPTIONS
-          value: "--dns-result-order=ipv4first"
-        - name: PORT
-          value: "8000"
         startupProbe:
           httpGet:
             path: /health
