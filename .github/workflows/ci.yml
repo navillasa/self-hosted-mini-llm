@@ -296,6 +296,11 @@ jobs:
           docker build -t mini-llm-backend:test ./backend
           docker build -t mini-llm-frontend:test ./frontend
 
+      - name: Verify frontend nginx config
+        run: |
+          echo "Checking nginx.conf in built image:"
+          docker run --rm mini-llm-frontend:test cat /etc/nginx/conf.d/default.conf
+
       - name: Create Docker network
         run: docker network create mini-llm-network
 
