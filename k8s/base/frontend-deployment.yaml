@@ -22,7 +22,7 @@ spec:
       containers:
       - name: frontend
         image: ghcr.io/navillasa/mini-llm-frontend:v1.0.0
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
           name: http
