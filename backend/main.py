@@ -12,9 +12,9 @@ from config import settings
 from auth import exchange_github_code_for_token, get_github_user, create_jwt_token, verify_jwt_token
 from rate_limiter import rate_limiter
 
-# Conditionally import GPT4All only when not in test mode
+# Conditionally import Llama only when not in test mode
 if not settings.test_mode:
-    from gpt4all import GPT4All
+    from llama_cpp import Llama
 
 app = FastAPI(title="Mini LLM with GitHub OAuth")
 
@@ -54,7 +54,8 @@ model_dir.mkdir(parents=True, exist_ok=True)
 model = None
 if not settings.test_mode:
     try:
-        model = GPT4All(settings.model_name, model_path=model_dir)
+        model_path = model_dir / settings.model_name
+        model = Llama(model_path=str(model_path), n_ctx=2048, n_threads=4)
         model_loaded.set(1)
         print(f"✅ Model loaded: {settings.model_name}")
     except Exception as e:
@@ -190,8 +191,14 @@ async def generate(request: GenerateRequest, user_data: dict = Depends(verify_jw
     try:
         inference_start = time.time()
 
-        with model.chat_session():
-            response_text = model.generate(request.prompt, max_tokens=request.max_tokens)
+        # Use llama-cpp-python API
+        output = model(
+            request.prompt,
+            max_tokens=request.max_tokens,
+            temperature=0.7,
+            stop=["</s>", "Human:", "User:"]
+        )
+        response_text = output['choices'][0]['text']
 
         # Record metrics
         inference_time = time.time() - inference_start

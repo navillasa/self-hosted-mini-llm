@@ -6,10 +6,17 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
+    cmake \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
+
+# Install llama-cpp-python without AVX (for Pentium J5005 compatibility)
+RUN CMAKE_ARGS="-DLLAMA_AVX=OFF -DLLAMA_AVX2=OFF -DLLAMA_FMA=OFF -DLLAMA_F16C=OFF" \
+    pip install --no-cache-dir llama-cpp-python
+
+# Install other requirements
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
