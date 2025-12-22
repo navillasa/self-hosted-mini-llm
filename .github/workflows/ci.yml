@@ -317,7 +317,7 @@ jobs:
           docker run -d \
             --name frontend \
             --network mini-llm-network \
-            -p 3000:80 \
+            -p 3000:8080 \
             mini-llm-frontend:test
 
       - name: Wait for services to be ready
