@@ -15,8 +15,17 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Create directory for model cache
-RUN mkdir -p /root/.cache/gpt4all
+# Create a non-root user
+RUN useradd -m -u 1000 appuser
+
+# Set HOME for the non-root user
+ENV HOME=/home/appuser
+ENV XDG_CACHE_HOME=/home/appuser/.cache
+
+# Make sure cache dir exists and is owned by non-root
+RUN mkdir -p $XDG_CACHE_HOME/gpt4all && chown -R 1000:1000 /home/appuser
+
+USER 1000
 
 # Expose port
 EXPOSE 8000

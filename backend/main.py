@@ -35,9 +35,18 @@ memory_usage = Gauge('llm_memory_usage_bytes', 'Memory usage in bytes')
 auth_requests = Counter('llm_auth_requests_total', 'Total authentication requests', ['provider', 'status'])
 rate_limit_hits = Counter('llm_rate_limit_hits_total', 'Total rate limit hits', ['limit_type'])
 
-# Initialize LLM model
-home_dir = Path(os.getenv("HOME", "/root"))
-model_dir = home_dir / ".cache" / "gpt4all"
+def get_model_dir() -> Path:
+    # Prefer XDG_CACHE_HOME if set, else HOME/.cache, else /tmp/.cache
+    xdg = os.getenv("XDG_CACHE_HOME")
+    if xdg:
+        base = Path(xdg)
+    else:
+        home = os.getenv("HOME")
+        base = Path(home) / ".cache" if home else Path("/tmp") / ".cache"
+    return base / "gpt4all"
+
+model_dir = get_model_dir()
+model_dir.mkdir(parents=True, exist_ok=True)
 
 model = None
 if not settings.test_mode:
