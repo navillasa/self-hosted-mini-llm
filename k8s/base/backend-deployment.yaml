@@ -37,7 +37,7 @@ spec:
         volumeMounts:
           - name: model-cache
             mountPath: /home/app/.cache
-        image: ghcr.io/navillasa/mini-llm-backend:v1.0.0
+        image: mini-llm-backend
         imagePullPolicy: Always
         ports:
         - containerPort: 8000

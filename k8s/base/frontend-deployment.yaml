@@ -21,7 +21,7 @@ spec:
         fsGroup: 1000
       containers:
       - name: frontend
-        image: ghcr.io/navillasa/mini-llm-frontend:v1.0.0
+        image: mini-llm-frontend
         imagePullPolicy: Always
         ports:
         - containerPort: 80
