@@ -9,7 +9,7 @@ import sys
 
 # Set test mode before importing the app
 os.environ["TEST_MODE"] = "1"
-os.environ["JWT_SECRET_KEY"] = "test-secret-key-for-ci"
+os.environ["JWT_SECRET"] = "test-secret-key-for-ci"
 os.environ["GITHUB_CLIENT_ID"] = "test-client-id"
 os.environ["GITHUB_CLIENT_SECRET"] = "test-client-secret"
 os.environ["FRONTEND_URL"] = "http://localhost:3000"

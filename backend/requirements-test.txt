@@ -1,7 +1,15 @@
 # Test dependencies for Mini LLM API
 pytest==8.3.4
 pytest-cov==6.0.0
-httpx==0.27.2
 
-# Include main dependencies (tests import the main app)
--r requirements.txt
+# Main dependencies needed for tests (excluding gpt4all which conflicts with pytest)
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.12
+httpx==0.27.2
+pydantic==2.9.2
+pydantic-settings==2.5.2
+prometheus-client==0.21.0
+psutil==6.1.0
