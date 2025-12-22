@@ -5,7 +5,7 @@ resources:
   - ../../base
 
 patches:
-  - ingress-patch.yaml
+  - path: ingress-patch.yaml
 
 labels:
   - pairs:
