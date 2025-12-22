@@ -25,6 +25,9 @@ ENV XDG_CACHE_HOME=/home/appuser/.cache
 # Make sure cache dir exists and is owned by non-root
 RUN mkdir -p $XDG_CACHE_HOME/gpt4all && chown -R 1000:1000 /home/appuser
 
+# Change ownership of app dir to non-root user
+RUN chown -R 1000:1000 /app
+
 USER 1000
 
 # Expose port
