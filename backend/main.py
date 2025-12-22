@@ -1,6 +1,5 @@
 from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from gpt4all import GPT4All
 from pathlib import Path
 from pydantic import BaseModel
 from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
@@ -12,6 +11,10 @@ import psutil
 from config import settings
 from auth import exchange_github_code_for_token, get_github_user, create_jwt_token, verify_jwt_token
 from rate_limiter import rate_limiter
+
+# Conditionally import GPT4All only when not in test mode
+if not settings.test_mode:
+    from gpt4all import GPT4All
 
 app = FastAPI(title="Mini LLM with GitHub OAuth")
 
