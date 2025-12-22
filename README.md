@@ -1,135 +1,206 @@
-# 🧠 Self-Hosted LLM Infrastructure
+# 🧠 Self-Hosted Mini LLM
 
-> **Small-scale AI inference setup using Terraform, Docker, and FastAPI**
+> **Full-stack AI chat application with GitOps deployment to Kubernetes**
 
-A lightweight demonstration of DevOps practices for hosting a quantized LLM on a single VPS, showcasing infrastructure automation, containerization, and API design patterns that could scale to larger deployments.
+A production-ready demonstration of deploying an LLM-powered chat application using modern DevOps practices: Kubernetes, GitOps with ArgoCD, CI/CD pipelines, and comprehensive secret management.
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-llm.navillasa.dev-blue)](https://llm.navillasa.dev)
-[![Infrastructure](https://img.shields.io/badge/Infrastructure-Terraform-purple)](./modules/)
-[![API](https://img.shields.io/badge/API-FastAPI-green)](./llm-node/)
-
-## 🏗️ Architecture Overview
+## 🏗️ Architecture
 
 ```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Internet      │───▶│   Traefik        │───▶│   FastAPI       │
-│   (HTTPS)       │    │   Reverse Proxy  │    │   + GPT4All     │
-└─────────────────┘    │   + Let's Encrypt│    │   (Container)   │
-                       └──────────────────┘    └─────────────────┘
-                                │
-                       ┌──────────────────┐
-                       │   Hetzner VPS    │
-                       │   (Terraform)    │
-                       │   Ubuntu 22.04   │
-                       └──────────────────┘
-```
-
-### Key Components
-
-- **Infrastructure**: Hetzner Cloud VPS provisioned via Terraform
-- **Model**: Meta Llama 3 8B (4-bit quantized) via GPT4All
-- **API**: FastAPI with Pydantic validation and error handling
-- **Reverse Proxy**: Traefik with automatic HTTPS (Let's Encrypt)
-- **Security**: HTTP Basic Auth, firewall configuration
-- **Containerization**: Docker Compose for local development and production
-
-## 🚀 Live Demo
-
-**Public API Endpoint**: https://llm.navillasa.dev
-
-```bash
-# Test the live API
-curl -u demo:password -X POST https://llm.navillasa.dev/generate \
-  -H "Content-Type: application/json" \
-  -d '{"prompt": "Explain DevOps in 50 words", "max_tokens": 100}'
-```
-
-**Response Example**:
-```json
-{
-  "response": "DevOps combines development and operations to streamline software delivery. It emphasizes automation, continuous integration/deployment, infrastructure as code, monitoring, and collaboration. Key tools include Docker, Kubernetes, Terraform, and CI/CD pipelines. DevOps reduces deployment time, increases reliability, and enables faster iteration cycles."
-}
+┌─────────────┐     ┌──────────────┐     ┌─────────────────┐
+│   GitHub    │────▶│   ArgoCD     │────▶│   MicroK8s      │
+│   (Source)  │     │   (GitOps)   │     │   Homelab       │
+└─────────────┘     └──────────────┘     └─────────────────┘
+                                                   │
+                          ┌────────────────────────┼─────────────────┐
+                          │                        │                 │
+                   ┌──────▼──────┐        ┌───────▼──────┐   ┌─────▼──────┐
+                   │  Frontend   │        │   Backend    │   │   Vault    │
+                   │  (React)    │───────▶│   (FastAPI)  │◀──│  (Secrets) │
+                   │  nginx:8080 │        │   GPT4All    │   └────────────┘
+                   └─────────────┘        └──────────────┘
 ```
 
 ## 🛠️ Technology Stack
 
-| Layer | Technology | Purpose |
-|-------|------------|---------|
-| **Infrastructure** | Terraform + Hetzner Cloud | Automated VPS provisioning |
-| **Containerization** | Docker + Docker Compose | Application packaging and orchestration |
-| **Web Framework** | FastAPI + Uvicorn | High-performance async API |
-| **AI Model** | GPT4All (Llama 3 8B Q4) | Local inference without external APIs |
-| **Reverse Proxy** | Traefik | HTTPS termination and routing |
-| **Monitoring** | Prometheus + Grafana | Metrics collection and visualization |
-| **Security** | Let's Encrypt + Basic Auth | SSL certificates and API protection |
+| Component | Technology | Purpose |
+|-----------|------------|---------|
+| **Orchestration** | Kubernetes (MicroK8s) | Container orchestration on homelab |
+| **GitOps** | ArgoCD | Automated deployment from Git |
+| **Manifests** | Kustomize | Environment-specific configurations |
+| **CI/CD** | GitHub Actions | Automated testing and image builds |
+| **Container Registry** | GitHub Container Registry (ghcr.io) | Docker image storage |
+| **Secrets** | HashiCorp Vault + External Secrets Operator | Secure secret management |
+| **Frontend** | React + Vite | Modern SPA with TypeScript |
+| **Backend** | FastAPI + Uvicorn | High-performance async API |
+| **AI Model** | GPT4All (Llama 3 8B) | Local LLM inference |
+| **Auth** | GitHub OAuth 2.0 + JWT | User authentication |
+| **Monitoring** | Prometheus | Metrics collection |
 
-## 🏃‍♂️ Quick Start
+
+## 📦 Repository Structure
+
+```
+.
+├── backend/                # FastAPI backend
+│   ├── main.py            # API endpoints and LLM integration
+│   ├── auth.py            # GitHub OAuth + JWT auth
+│   ├── rate_limiter.py    # Request rate limiting
+│   └── Dockerfile         # Backend container image
+├── frontend/              # React frontend
+│   ├── src/               # React components
+│   ├── nginx.conf         # nginx configuration (port 8080)
+│   └── Dockerfile         # Frontend container image
+├── k8s/                   # Kubernetes manifests
+│   ├── base/              # Base resources (deployments, services, secrets)
+│   ├── overlays/dev/      # Dev environment overlay
+│   └── argocd/            # ArgoCD Application definitions
+└── .github/workflows/     # CI/CD pipelines
+    └── ci.yml             # Build, test, and publish images
+```
+
+## 🏃 Deployment
 
 ### Prerequisites
-- Terraform >= 1.0
-- Docker and Docker Compose
-- Domain name with DNS access
-- Hetzner Cloud account
 
-### 1. Provision Infrastructure
+- Kubernetes cluster (tested on MicroK8s)
+- ArgoCD installed
+- Vault + External Secrets Operator configured
+- GitHub OAuth app credentials
+
+### Setup Secrets in Vault
+
 ```bash
-# Clone the repository
-git clone https://github.com/navillasa/self-hosted-mini-llm.git
-cd self-hosted-mini-llm
-
-# Configure Terraform variables
-cp modules/terraform.tfvars.example modules/terraform.tfvars
-# Edit terraform.tfvars with your Hetzner API token
-
-# Deploy infrastructure
-cd modules
-terraform init
-terraform apply
+vault kv put secret/mini-llm/backend \
+  github_client_id='your-client-id' \
+  github_client_secret='your-client-secret' \
+  jwt_secret="$(openssl rand -base64 32)" \
+  frontend_url='https://your-frontend-url'
 ```
 
-### 2. Deploy Application
+### Deploy with ArgoCD
+
 ```bash
-# SSH to your server
-ssh root@your-server-ip
+# Apply the ArgoCD Application
+kubectl apply -f k8s/argocd/mini-llm-app-dev.yaml
 
-# Clone repo on server
-git clone https://github.com/navillasa/self-hosted-mini-llm.git
-cd self-hosted-mini-llm/llm-node
-
-# Configure environment
-cp .env.example .env
-# Edit .env with your domain and auth credentials
-
-# Deploy application
-chmod +x setup-llm.sh
-./setup-llm.sh
+# Watch deployment
+kubectl get application -n argocd mini-llm-dev
+kubectl get pods -n mini-llm-dev -w
 ```
 
-### 3. Verify Deployment
-```bash
-# Health check
-curl https://your-domain.com/health
+### Manual Deployment (without ArgoCD)
 
-# Test inference
-curl -u username:password -X POST https://your-domain.com/generate \
-  -H "Content-Type: application/json" \
-  -d '{"prompt": "Hello, world!", "max_tokens": 50}'
+```bash
+# Apply manifests directly
+kubectl apply -k k8s/overlays/dev
+
+# Check status
+kubectl get all -n mini-llm-dev
 ```
 
-## 📊 Performance & Monitoring
+## 🔄 CI/CD Pipeline
 
-### Available Metrics
-The API exports the following Prometheus metrics:
-- `llm_requests_total` - Total API requests by endpoint and status
-- `llm_request_duration_seconds` - Request duration histogram
+When you push to `main`:
+
+1. **Run Tests**: Backend unit tests + frontend build tests
+2. **Build Images**: Docker images tagged with git commit SHA
+3. **Push to Registry**: Images pushed to ghcr.io
+4. **Update Kustomization**: Image tags automatically updated in git
+5. **ArgoCD Sync**: Detects changes and deploys new version
+
+## 📊 Monitoring
+
+Prometheus metrics available at `/metrics`:
+
+- `llm_requests_total` - API request counts
+- `llm_request_duration_seconds` - Request latency
 - `llm_inference_duration_seconds` - Model inference time
-- `llm_tokens_generated_total` - Cumulative tokens generated
-- `llm_model_loaded` - Model availability status (0/1)
-- `llm_cpu_usage_percent` - Real-time CPU utilization
-- `llm_memory_usage_bytes` - Memory consumption
+- `llm_tokens_generated_total` - Total tokens generated
+- `llm_model_loaded` - Model status
+- `llm_cpu_usage_percent` - CPU utilization
+- `llm_memory_usage_bytes` - Memory usage
+- `llm_auth_requests_total` - OAuth attempts
+- `llm_rate_limit_hits_total` - Rate limit violations
+
+## 🔐 Security Features
+
+- **Non-root containers**: Both frontend and backend run as user 1000
+- **Secret management**: Vault integration, no secrets in git
+- **OAuth authentication**: GitHub social login
+- **JWT tokens**: Stateless authentication
+- **Rate limiting**: Prevents abuse
+- **HTTPS**: TLS termination at ingress
+
+## 🛠️ Local Development
+
+### Backend
+
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# Copy and configure .env
+cp .env.example .env
+
+# Run backend
+uvicorn main:app --reload
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+
+# Copy and configure .env
+cp .env.example .env
+
+# Run dev server
+npm run dev
+```
+
+## 🐛 Troubleshooting
+
+### Pods not starting
+
+```bash
+# Check pod status
+kubectl get pods -n mini-llm-dev
+
+# View logs
+kubectl logs -n mini-llm-dev deployment/backend
+kubectl logs -n mini-llm-dev deployment/frontend
+
+# Check events
+kubectl describe pod -n mini-llm-dev <pod-name>
+```
+
+### ArgoCD not syncing
+
+```bash
+# Check application status
+kubectl get application -n argocd mini-llm-dev -o yaml
+
+# Force sync
+argocd app sync mini-llm-dev
+```
+
+### Secrets not available
+
+```bash
+# Check ExternalSecret
+kubectl get externalsecret -n mini-llm-dev
+kubectl describe externalsecret backend-secrets -n mini-llm-dev
+
+# Verify Vault connection
+kubectl get clustersecretstore vault-backend
+```
 
 ## 🔗 Related Projects
 
-- **[TV Dashboard K8s](https://github.com/navillasa/tv-dashboard-k8s)**: Full-stack Kubernetes deployment with GitOps
-- **[VPN Ad Blocker](https://github.com/navillasa/vpn-ad-blocker)**: Network security and automation
-- **[Basic VPS Setup](https://github.com/navillasa/basic-vps-setup)**: Server hardening and initial configuration
+- **[Homelab Infrastructure](https://github.com/navillasa/homelab)**: MicroK8s homelab with Vault, ArgoCD, monitoring
+- **[TV Dashboard K8s](https://github.com/navillasa/tv-dashboard-k8s)**: Full-stack app with multi-cloud deployment
+- **[Multi-cloud LLM Router](https://github.com/navillasa/multi-cloud-llm-router)**: Enterprise LLM routing and cost optimization
