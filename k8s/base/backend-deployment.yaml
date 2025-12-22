@@ -34,6 +34,26 @@ spec:
             value: /home/app
           - name: NODE_OPTIONS
             value: "--dns-result-order=ipv4first"
+          - name: GITHUB_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: backend-secrets
+                key: GITHUB_CLIENT_ID
+          - name: GITHUB_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: backend-secrets
+                key: GITHUB_CLIENT_SECRET
+          - name: JWT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: backend-secrets
+                key: JWT_SECRET
+          - name: FRONTEND_URL
+            valueFrom:
+              secretKeyRef:
+                name: backend-secrets
+                key: FRONTEND_URL
         volumeMounts:
           - name: model-cache
             mountPath: /home/app/.cache
