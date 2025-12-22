@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     rate_limit_per_day: int = 100
 
     # LLM Model
-    model_name: str = "Meta-Llama-3-8B-Instruct.Q4_0.gguf"
+    model_name: str = "Llama-3.2-1B-Instruct-Q4_0.gguf"
     test_mode: bool = False
 
     class Config:

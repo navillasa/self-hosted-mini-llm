@@ -34,11 +34,17 @@ spec:
         - sh
         - -c
         - |
-          if [ ! -f /home/app/.cache/gpt4all/Meta-Llama-3-8B-Instruct.Q4_0.gguf ]; then
-            echo "Model not found, downloading..."
-            mkdir -p /home/app/.cache/gpt4all
-            curl -L -o /home/app/.cache/gpt4all/Meta-Llama-3-8B-Instruct.Q4_0.gguf \
-              https://gpt4all.io/models/gguf/Meta-Llama-3-8B-Instruct.Q4_0.gguf
+          mkdir -p /home/app/.cache/gpt4all
+          # Remove old 8B model if it exists to free up space
+          if [ -f /home/app/.cache/gpt4all/Meta-Llama-3-8B-Instruct.Q4_0.gguf ]; then
+            echo "Removing old 8B model..."
+            rm /home/app/.cache/gpt4all/Meta-Llama-3-8B-Instruct.Q4_0.gguf
+          fi
+          # Download 1B model if not present
+          if [ ! -f /home/app/.cache/gpt4all/Llama-3.2-1B-Instruct-Q4_0.gguf ]; then
+            echo "Downloading Llama 3.2 1B model..."
+            curl -L -o /home/app/.cache/gpt4all/Llama-3.2-1B-Instruct-Q4_0.gguf \
+              https://gpt4all.io/models/gguf/Llama-3.2-1B-Instruct-Q4_0.gguf
           else
             echo "Model already exists, skipping download"
           fi
@@ -106,8 +112,8 @@ spec:
           failureThreshold: 3
         resources:
           requests:
-            memory: "6Gi"
-            cpu: "500m"
+            memory: "2Gi"
+            cpu: "250m"
           limits:
-            memory: "8Gi"
+            memory: "3Gi"
             cpu: "1000m"
