@@ -1,8 +1,10 @@
-from fastapi import HTTPException, Header
-from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from typing import Optional
+
+from fastapi import HTTPException, Header
+from jose import JWTError, jwt
 import httpx
+
 from config import settings
 
 
@@ -16,15 +18,20 @@ async def exchange_github_code_for_token(code: str) -> dict:
                 "client_id": settings.github_client_id,
                 "client_secret": settings.github_client_secret,
                 "code": code,
-            }
+            },
         )
 
         if response.status_code != 200:
-            raise HTTPException(status_code=400, detail="Failed to exchange code for token")
+            raise HTTPException(
+                status_code=400, detail="Failed to exchange code for token"
+            )
 
         data = response.json()
         if "error" in data:
-            raise HTTPException(status_code=400, detail=data.get("error_description", "GitHub OAuth error"))
+            raise HTTPException(
+                status_code=400,
+                detail=data.get("error_description", "GitHub OAuth error"),
+            )
 
         return data
 
@@ -36,12 +43,14 @@ async def get_github_user(access_token: str) -> dict:
             "https://api.github.com/user",
             headers={
                 "Authorization": f"Bearer {access_token}",
-                "Accept": "application/json"
-            }
+                "Accept": "application/json",
+            },
         )
 
         if response.status_code != 200:
-            raise HTTPException(status_code=400, detail="Failed to get GitHub user info")
+            raise HTTPException(
+                status_code=400, detail="Failed to get GitHub user info"
+            )
 
         return response.json()
 
@@ -68,16 +77,16 @@ def verify_jwt_token(authorization: Optional[str] = Header(None)) -> dict:
         raise HTTPException(status_code=401, detail="Missing authorization header")
 
     if not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Invalid authorization header format")
+        raise HTTPException(
+            status_code=401, detail="Invalid authorization header format"
+        )
 
     token = authorization.replace("Bearer ", "")
 
     try:
         payload = jwt.decode(
-            token,
-            settings.jwt_secret,
-            algorithms=[settings.jwt_algorithm]
+            token, settings.jwt_secret, algorithms=[settings.jwt_algorithm]
         )
         return payload
     except JWTError as e:
-        raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}")
+        raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}") from e

@@ -1,17 +1,29 @@
-from fastapi import FastAPI, Request, HTTPException, Depends
-from fastapi.middleware.cors import CORSMiddleware
-from pathlib import Path
-from pydantic import BaseModel
-from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
-from starlette.responses import Response, RedirectResponse
+import asyncio
 import os
 import time
-import psutil
-import asyncio
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 
+from fastapi import FastAPI, Request, HTTPException, Depends
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from prometheus_client import (
+    Counter,
+    Histogram,
+    Gauge,
+    generate_latest,
+    CONTENT_TYPE_LATEST,
+)
+import psutil
+from starlette.responses import Response, RedirectResponse
+
+from auth import (
+    exchange_github_code_for_token,
+    get_github_user,
+    create_jwt_token,
+    verify_jwt_token,
+)
 from config import settings
-from auth import exchange_github_code_for_token, get_github_user, create_jwt_token, verify_jwt_token
 from rate_limiter import rate_limiter
 
 # Conditionally import Llama only when not in test mode
@@ -33,15 +45,30 @@ app.add_middleware(
 )
 
 # Prometheus metrics
-request_count = Counter('llm_requests_total', 'Total number of requests', ['method', 'endpoint', 'status'])
-request_duration = Histogram('llm_request_duration_seconds', 'Request duration in seconds', ['method', 'endpoint'])
-inference_duration = Histogram('llm_inference_duration_seconds', 'Model inference duration in seconds')
-tokens_generated = Counter('llm_tokens_generated_total', 'Total tokens generated')
-llm_model_loaded = Gauge('llm_model_loaded', 'Whether the model is loaded (1) or not (0)')
-cpu_usage = Gauge('llm_cpu_usage_percent', 'CPU usage percentage')
-memory_usage = Gauge('llm_memory_usage_bytes', 'Memory usage in bytes')
-auth_requests = Counter('llm_auth_requests_total', 'Total authentication requests', ['provider', 'status'])
-rate_limit_hits = Counter('llm_rate_limit_hits_total', 'Total rate limit hits', ['limit_type'])
+request_count = Counter(
+    "llm_requests_total", "Total number of requests", ["method", "endpoint", "status"]
+)
+request_duration = Histogram(
+    "llm_request_duration_seconds",
+    "Request duration in seconds",
+    ["method", "endpoint"],
+)
+inference_duration = Histogram(
+    "llm_inference_duration_seconds", "Model inference duration in seconds"
+)
+tokens_generated = Counter("llm_tokens_generated_total", "Total tokens generated")
+llm_model_loaded = Gauge(
+    "llm_model_loaded", "Whether the model is loaded (1) or not (0)"
+)
+cpu_usage = Gauge("llm_cpu_usage_percent", "CPU usage percentage")
+memory_usage = Gauge("llm_memory_usage_bytes", "Memory usage in bytes")
+auth_requests = Counter(
+    "llm_auth_requests_total", "Total authentication requests", ["provider", "status"]
+)
+rate_limit_hits = Counter(
+    "llm_rate_limit_hits_total", "Total rate limit hits", ["limit_type"]
+)
+
 
 def get_model_dir() -> Path:
     # Prefer XDG_CACHE_HOME if set, else HOME/.cache, else /tmp/.cache
@@ -52,6 +79,7 @@ def get_model_dir() -> Path:
         home = os.getenv("HOME")
         base = Path(home) / ".cache" if home else Path("/tmp") / ".cache"
     return base / "gpt4all"
+
 
 llm_model_dir = get_model_dir()
 llm_model_dir.mkdir(parents=True, exist_ok=True)
@@ -71,6 +99,7 @@ else:
     llm_model_loaded.set(0)
     print("🧪 Test mode enabled - no real model loaded")
 
+
 # Middleware to track request metrics
 @app.middleware("http")
 async def metrics_middleware(request: Request, call_next):
@@ -84,8 +113,12 @@ async def metrics_middleware(request: Request, call_next):
 
     # Record request metrics
     duration = time.time() - start_time
-    request_duration.labels(method=request.method, endpoint=request.url.path).observe(duration)
-    request_count.labels(method=request.method, endpoint=request.url.path, status=response.status_code).inc()
+    request_duration.labels(method=request.method, endpoint=request.url.path).observe(
+        duration
+    )
+    request_count.labels(
+        method=request.method, endpoint=request.url.path, status=response.status_code
+    ).inc()
 
     return response
 
@@ -93,6 +126,7 @@ async def metrics_middleware(request: Request, call_next):
 # ============================================================================
 # Auth Endpoints
 # ============================================================================
+
 
 @app.get("/api/auth/github")
 async def github_auth():
@@ -133,7 +167,9 @@ async def github_callback(code: str):
         raise
     except Exception as e:
         auth_requests.labels(provider="github", status="error").inc()
-        raise HTTPException(status_code=500, detail=f"Authentication failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Authentication failed: {str(e)}"
+        ) from e
 
 
 @app.get("/api/auth/me")
@@ -148,7 +184,7 @@ async def get_current_user(user_data: dict = Depends(verify_jwt_token)):
             "username": user_data["username"],
             "avatar_url": user_data.get("avatar_url"),
         },
-        "usage": usage_stats
+        "usage": usage_stats,
     }
 
 
@@ -156,13 +192,16 @@ async def get_current_user(user_data: dict = Depends(verify_jwt_token)):
 # LLM Endpoints
 # ============================================================================
 
+
 class GenerateRequest(BaseModel):
     prompt: str
     max_tokens: int = 100
 
 
 @app.post("/api/llm/generate")
-async def generate(request: GenerateRequest, user_data: dict = Depends(verify_jwt_token)):
+async def generate(
+    request: GenerateRequest, user_data: dict = Depends(verify_jwt_token)
+):
     """Generate LLM response (requires authentication)"""
     user_id = user_data["sub"]
     username = user_data["username"]
@@ -182,11 +221,7 @@ async def generate(request: GenerateRequest, user_data: dict = Depends(verify_jw
     if settings.test_mode:
         response_text = f"[TEST MODE] Mock response for: {request.prompt[:50]}..."
         tokens_generated.inc(len(response_text.split()))
-        return {
-            "response": response_text,
-            "usage": usage_stats,
-            "user": username
-        }
+        return {"response": response_text, "usage": usage_stats, "user": username}
 
     # Check if model is loaded
     if not llm_model:
@@ -204,10 +239,10 @@ async def generate(request: GenerateRequest, user_data: dict = Depends(verify_jw
                 request.prompt,
                 max_tokens=request.max_tokens,
                 temperature=0.7,
-                stop=["</s>", "Human:", "User:"]
-            )
+                stop=["</s>", "Human:", "User:"],
+            ),
         )
-        response_text = output['choices'][0]['text']
+        response_text = output["choices"][0]["text"]
 
         # Record metrics
         inference_time = time.time() - inference_start
@@ -217,16 +252,19 @@ async def generate(request: GenerateRequest, user_data: dict = Depends(verify_jw
         return {
             "response": response_text,
             "usage": usage_stats,
-            "inference_time_seconds": round(inference_time, 2)
+            "inference_time_seconds": round(inference_time, 2),
         }
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Generation failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Generation failed: {str(e)}"
+        ) from e
 
 
 # ============================================================================
 # Health & Metrics
 # ============================================================================
+
 
 @app.get("/health")
 async def health():
@@ -234,7 +272,7 @@ async def health():
     return {
         "status": "ok",
         "llm_model_loaded": llm_model is not None,
-        "test_mode": settings.test_mode
+        "test_mode": settings.test_mode,
     }
 
 
@@ -256,6 +294,6 @@ async def root():
             "generate": "/api/llm/generate (requires auth)",
             "user_info": "/api/auth/me (requires auth)",
             "health": "/health",
-            "metrics": "/metrics"
-        }
+            "metrics": "/metrics",
+        },
     }

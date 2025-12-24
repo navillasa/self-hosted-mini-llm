@@ -35,8 +35,8 @@ class RateLimiter:
                     "error": "Rate limit exceeded",
                     "limit_type": "per_minute",
                     "limit": settings.rate_limit_per_minute,
-                    "retry_after_seconds": 60
-                }
+                    "retry_after_seconds": 60,
+                },
             )
 
         # Check daily rate limit
@@ -49,8 +49,10 @@ class RateLimiter:
                     "error": "Daily rate limit exceeded",
                     "limit_type": "per_day",
                     "limit": settings.rate_limit_per_day,
-                    "retry_after_seconds": int((cutoff_daily + timedelta(days=1) - now).total_seconds())
-                }
+                    "retry_after_seconds": int(
+                        (cutoff_daily + timedelta(days=1) - now).total_seconds()
+                    ),
+                },
             )
 
         # Log this request
@@ -62,7 +64,9 @@ class RateLimiter:
             "requests_today": requests_today + 1,
             "limit_per_minute": settings.rate_limit_per_minute,
             "limit_per_day": settings.rate_limit_per_day,
-            "remaining_minute": settings.rate_limit_per_minute - requests_last_minute - 1,
+            "remaining_minute": settings.rate_limit_per_minute
+            - requests_last_minute
+            - 1,
             "remaining_day": settings.rate_limit_per_day - requests_today - 1,
         }
 

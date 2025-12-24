@@ -2,10 +2,12 @@
 Integration tests for the Mini LLM API
 Tests health endpoints and basic API functionality in TEST_MODE
 """
-import pytest
-from fastapi.testclient import TestClient
+
 import os
 import sys
+
+import pytest
+from fastapi.testclient import TestClient
 
 # Set test mode before importing the app
 os.environ["TEST_MODE"] = "1"
@@ -14,7 +16,7 @@ os.environ["GITHUB_CLIENT_ID"] = "test-client-id"
 os.environ["GITHUB_CLIENT_SECRET"] = "test-client-secret"
 os.environ["FRONTEND_URL"] = "http://localhost:3000"
 
-from main import app
+from main import app  # noqa: E402
 
 client = TestClient(app)
 
@@ -63,7 +65,7 @@ class TestAuthEndpoints:
     def test_me_endpoint_without_auth(self):
         """Test that /me endpoint requires authentication"""
         response = client.get("/api/auth/me")
-        assert response.status_code == 401 or response.status_code == 403
+        assert response.status_code in (401, 403)
 
 
 class TestLLMEndpoints:
@@ -72,17 +74,13 @@ class TestLLMEndpoints:
     def test_generate_endpoint_without_auth(self):
         """Test that generate endpoint requires authentication"""
         response = client.post(
-            "/api/llm/generate",
-            json={"prompt": "Hello world", "max_tokens": 50}
+            "/api/llm/generate", json={"prompt": "Hello world", "max_tokens": 50}
         )
-        assert response.status_code == 401 or response.status_code == 403
+        assert response.status_code in (401, 403)
 
     def test_generate_endpoint_with_invalid_payload(self):
         """Test that generate endpoint validates request payload"""
-        response = client.post(
-            "/api/llm/generate",
-            json={"invalid": "field"}
-        )
+        response = client.post("/api/llm/generate", json={"invalid": "field"})
         # Should fail either due to auth or validation
         assert response.status_code in [401, 403, 422]
 
@@ -96,8 +94,8 @@ class TestCORS:
             "/health",
             headers={
                 "Origin": "http://localhost:3000",
-                "Access-Control-Request-Method": "GET"
-            }
+                "Access-Control-Request-Method": "GET",
+            },
         )
         # FastAPI handles OPTIONS automatically with CORS middleware
         assert response.status_code == 200
