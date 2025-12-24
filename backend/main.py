@@ -7,6 +7,8 @@ from starlette.responses import Response, RedirectResponse
 import os
 import time
 import psutil
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
 from config import settings
 from auth import exchange_github_code_for_token, get_github_user, create_jwt_token, verify_jwt_token
@@ -17,6 +19,9 @@ if not settings.test_mode:
     from llama_cpp import Llama
 
 app = FastAPI(title="Mini LLM with GitHub OAuth")
+
+# Thread pool for async LLM inference
+executor = ThreadPoolExecutor(max_workers=2)
 
 # CORS middleware for frontend
 app.add_middleware(
@@ -191,12 +196,16 @@ async def generate(request: GenerateRequest, user_data: dict = Depends(verify_jw
     try:
         inference_start = time.time()
 
-        # Use llama-cpp-python API
-        output = llm_model(
-            request.prompt,
-            max_tokens=request.max_tokens,
-            temperature=0.7,
-            stop=["</s>", "Human:", "User:"]
+        # Run LLM inference in background thread to not block event loop
+        loop = asyncio.get_event_loop()
+        output = await loop.run_in_executor(
+            executor,
+            lambda: llm_model(
+                request.prompt,
+                max_tokens=request.max_tokens,
+                temperature=0.7,
+                stop=["</s>", "Human:", "User:"]
+            )
         )
         response_text = output['choices'][0]['text']
 
