@@ -2,7 +2,7 @@
 
 > **Full-stack AI chat application with GitOps deployment to Kubernetes**
 
-A production-ready demonstration of deploying an LLM-powered chat application using modern DevOps practices: Kubernetes, GitOps with ArgoCD, CI/CD pipelines, and comprehensive secret management.
+An LLM chat application with GitHub OAuth, automated deployment with ArgoCD, and custom-compiled llama.cpp for running on legacy hardware (aka my homelab's Pentium J5005 processor).
 
 ## 🏗️ Architecture
 
