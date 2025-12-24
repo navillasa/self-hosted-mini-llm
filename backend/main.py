@@ -55,7 +55,7 @@ llm_model = None
 if not settings.test_mode:
     try:
         llm_model_path = llm_model_dir / settings.llm_model_name
-        llm_model = Llama(llm_model_path=str(llm_model_path), n_ctx=2048, n_threads=4)
+        llm_model = Llama(model_path=str(llm_model_path), n_ctx=2048, n_threads=4)
         llm_model_loaded.set(1)
         print(f"✅ Model loaded: {settings.llm_model_name}")
     except Exception as e:
