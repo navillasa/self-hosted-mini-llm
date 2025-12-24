@@ -1,11 +1,50 @@
+# Secrets and sensitive files
 .env
+.env.local
 .secrets
+*.key
+*.pem
+
+# Terraform
 terraform.tfstate
 terraform.tfstate.backup
 .terraform.lock.hcl
 .terraform/
-models
-node_modules
-__pycache__
-venv
+
+# Models and large files
+models/
+*.gguf
+*.whl
+
+# Dependencies
+node_modules/
+venv/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Docs (if you have WIP docs)
 SETUP.md
