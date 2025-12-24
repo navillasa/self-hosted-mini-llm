@@ -18,7 +18,7 @@ labels:
 images:
 - name: mini-llm-backend
   newName: ghcr.io/navillasa/mini-llm-backend
-  newTag: 2f1fb5c
+  newTag: "8089e50"
 - name: mini-llm-frontend
   newName: ghcr.io/navillasa/mini-llm-frontend
-  newTag: 2f1fb5c
+  newTag: "8089e50"
