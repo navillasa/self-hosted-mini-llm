@@ -1,5 +1,9 @@
 # 🧠 Self-Hosted Mini LLM
 
+[![CI/CD](https://github.com/navillasa/self-hosted-mini-llm/actions/workflows/ci.yml/badge.svg)](https://github.com/navillasa/self-hosted-mini-llm/actions/workflows/ci.yml)
+[![Security Scan](https://github.com/navillasa/self-hosted-mini-llm/actions/workflows/security.yml/badge.svg)](https://github.com/navillasa/self-hosted-mini-llm/actions/workflows/security.yml)
+[![Lint](https://github.com/navillasa/self-hosted-mini-llm/actions/workflows/lint.yml/badge.svg)](https://github.com/navillasa/self-hosted-mini-llm/actions/workflows/lint.yml)
+
 > **Full-stack AI chat application with GitOps deployment to Kubernetes**
 
 An LLM chat application with GitHub OAuth, automated deployment with ArgoCD, and custom-compiled llama.cpp for running on legacy hardware (aka my homelab's Pentium J5005 processor).

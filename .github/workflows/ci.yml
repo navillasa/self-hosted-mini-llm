@@ -237,11 +237,6 @@ jobs:
           tags: |
             type=sha,prefix=,format=short
 
-      - name: Create frontend .env file
-        working-directory: ./frontend
-        run: |
-          echo "VITE_API_URL=http://localhost:8000" > .env
-
       - name: Build and push frontend image
         uses: docker/build-push-action@v5
         with:
