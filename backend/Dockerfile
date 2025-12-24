@@ -12,8 +12,9 @@ RUN apt-get update && apt-get install -y \
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
 
-# Install llama-cpp-python without AVX (for Pentium J5005 compatibility)
-RUN CMAKE_ARGS="-DLLAMA_AVX=OFF -DLLAMA_AVX2=OFF -DLLAMA_FMA=OFF -DLLAMA_F16C=OFF" \
+# Install llama-cpp-python with minimal CPU features (for Pentium J5005 compatibility)
+# LLAMA_NATIVE=OFF prevents auto-detection of CPU features
+RUN CMAKE_ARGS="-DLLAMA_NATIVE=OFF -DLLAMA_AVX=OFF -DLLAMA_AVX2=OFF -DLLAMA_AVX512=OFF -DLLAMA_FMA=OFF -DLLAMA_F16C=OFF" \
     pip install --no-cache-dir llama-cpp-python
 
 # Install other requirements
