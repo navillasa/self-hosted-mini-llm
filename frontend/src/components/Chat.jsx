@@ -128,8 +128,10 @@ export default function Chat({ user, onLogout }) {
                 >
                   <div className="whitespace-pre-wrap">{message.content}</div>
                   {message.inferenceTime && (
-                    <div className="text-xs text-gray-400 mt-2">
-                      Generated in {message.inferenceTime}s
+                    <div className="text-xs text-gray-400 mt-2 flex items-center space-x-2">
+                      <span>⚡ {message.inferenceTime}s</span>
+                      <span className="text-gray-500">•</span>
+                      <span className="text-gray-500">~{Math.round(100 / message.inferenceTime * 10) / 10} tokens/sec</span>
                     </div>
                   )}
                 </div>
@@ -138,12 +140,18 @@ export default function Chat({ user, onLogout }) {
           )}
           {loading && (
             <div className="flex justify-start">
-              <div className="bg-gray-800 text-gray-100 rounded-lg px-4 py-3">
-                <div className="flex space-x-2">
-                  <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce delay-100"></div>
-                  <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce delay-200"></div>
+              <div className="bg-gray-800 text-gray-100 rounded-lg px-4 py-3 max-w-md">
+                <div className="flex items-center space-x-3 mb-2">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-100"></div>
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-200"></div>
+                  </div>
+                  <span className="text-sm font-medium">Thinking...</span>
                 </div>
+                <p className="text-xs text-gray-400">
+                  Running inference on CPU-only hardware. This may take 1-2 minutes for longer responses.
+                </p>
               </div>
             </div>
           )}
