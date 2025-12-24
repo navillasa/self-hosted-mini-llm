@@ -12,11 +12,11 @@ RUN apt-get update && apt-get install -y \
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
 
-# Install llama-cpp-python with minimal CPU features (for Pentium J5005 compatibility)
-# LLAMA_NATIVE=OFF prevents auto-detection of CPU features
-# --no-binary forces building from source instead of using prebuilt wheels
-RUN CMAKE_ARGS="-DLLAMA_NATIVE=OFF -DLLAMA_AVX=OFF -DLLAMA_AVX2=OFF -DLLAMA_AVX512=OFF -DLLAMA_FMA=OFF -DLLAMA_F16C=OFF" \
-    pip install --no-cache-dir --no-binary :all: llama-cpp-python
+# Copy pre-built llama-cpp-python wheel (built on J5005 for compatibility)
+COPY llama_cpp_python-*.whl /tmp/
+
+# Install llama-cpp-python from local wheel
+RUN pip install --no-cache-dir /tmp/llama_cpp_python-*.whl
 
 # Install other requirements
 RUN pip install --no-cache-dir -r requirements.txt
