@@ -11,6 +11,7 @@ resources:
   - backend-service.yaml
   - model-cache-pvc.yaml
   - ingress.yaml
+  - prometheus-alerts.yaml
 
 labels:
   - pairs:
