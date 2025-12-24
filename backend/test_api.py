@@ -28,7 +28,7 @@ class TestHealthEndpoints:
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "ok"
-        assert "model_loaded" in data
+        assert "llm_model_loaded" in data
         assert "test_mode" in data
         assert data["test_mode"] is True
 
@@ -107,7 +107,7 @@ def test_model_not_loaded_in_test_mode():
     """Verify that model is not loaded in test mode"""
     response = client.get("/health")
     data = response.json()
-    assert data["model_loaded"] is False
+    assert data["llm_model_loaded"] is False
     assert data["test_mode"] is True
 
 

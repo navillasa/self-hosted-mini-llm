@@ -32,7 +32,7 @@ request_count = Counter('llm_requests_total', 'Total number of requests', ['meth
 request_duration = Histogram('llm_request_duration_seconds', 'Request duration in seconds', ['method', 'endpoint'])
 inference_duration = Histogram('llm_inference_duration_seconds', 'Model inference duration in seconds')
 tokens_generated = Counter('llm_tokens_generated_total', 'Total tokens generated')
-model_loaded = Gauge('llm_model_loaded', 'Whether the model is loaded (1) or not (0)')
+llm_model_loaded = Gauge('llm_model_loaded', 'Whether the model is loaded (1) or not (0)')
 cpu_usage = Gauge('llm_cpu_usage_percent', 'CPU usage percentage')
 memory_usage = Gauge('llm_memory_usage_bytes', 'Memory usage in bytes')
 auth_requests = Counter('llm_auth_requests_total', 'Total authentication requests', ['provider', 'status'])
@@ -48,22 +48,22 @@ def get_model_dir() -> Path:
         base = Path(home) / ".cache" if home else Path("/tmp") / ".cache"
     return base / "gpt4all"
 
-model_dir = get_model_dir()
-model_dir.mkdir(parents=True, exist_ok=True)
+llm_model_dir = get_model_dir()
+llm_model_dir.mkdir(parents=True, exist_ok=True)
 
-model = None
+llm_model = None
 if not settings.test_mode:
     try:
-        model_path = model_dir / settings.model_name
-        model = Llama(model_path=str(model_path), n_ctx=2048, n_threads=4)
-        model_loaded.set(1)
-        print(f"✅ Model loaded: {settings.model_name}")
+        llm_model_path = llm_model_dir / settings.llm_model_name
+        llm_model = Llama(llm_model_path=str(llm_model_path), n_ctx=2048, n_threads=4)
+        llm_model_loaded.set(1)
+        print(f"✅ Model loaded: {settings.llm_model_name}")
     except Exception as e:
-        model = None
-        model_loaded.set(0)
+        llm_model = None
+        llm_model_loaded.set(0)
         print(f"❌ Model failed to load: {e}")
 else:
-    model_loaded.set(0)
+    llm_model_loaded.set(0)
     print("🧪 Test mode enabled - no real model loaded")
 
 # Middleware to track request metrics
@@ -184,7 +184,7 @@ async def generate(request: GenerateRequest, user_data: dict = Depends(verify_jw
         }
 
     # Check if model is loaded
-    if not model:
+    if not llm_model:
         raise HTTPException(status_code=503, detail="Model not loaded")
 
     # Generate response
@@ -192,7 +192,7 @@ async def generate(request: GenerateRequest, user_data: dict = Depends(verify_jw
         inference_start = time.time()
 
         # Use llama-cpp-python API
-        output = model(
+        output = llm_model(
             request.prompt,
             max_tokens=request.max_tokens,
             temperature=0.7,
@@ -224,7 +224,7 @@ async def health():
     """Health check endpoint"""
     return {
         "status": "ok",
-        "model_loaded": model is not None,
+        "llm_model_loaded": llm_model is not None,
         "test_mode": settings.test_mode
     }
 

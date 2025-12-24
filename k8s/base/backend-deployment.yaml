@@ -41,10 +41,10 @@ spec:
             rm /home/app/.cache/gpt4all/Meta-Llama-3-8B-Instruct.Q4_0.gguf
           fi
           # Download 1B model if not present
-          if [ ! -f /home/app/.cache/gpt4all/Llama-3.2-1B-Instruct-Q4_0.gguf ]; then
-            echo "Downloading Llama 3.2 1B model..."
-            curl -L -o /home/app/.cache/gpt4all/Llama-3.2-1B-Instruct-Q4_0.gguf \
-              https://gpt4all.io/models/gguf/Llama-3.2-1B-Instruct-Q4_0.gguf
+          if [ ! -f /home/app/.cache/gpt4all/Llama-3.2-1B-Instruct-Q4_K_M.gguf ]; then
+            echo "Downloading Llama 3.2 1B model from HuggingFace..."
+            curl -L -o /home/app/.cache/gpt4all/Llama-3.2-1B-Instruct-Q4_K_M.gguf \
+              https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q4_K_M.gguf
           else
             echo "Model already exists, skipping download"
           fi
