@@ -31,7 +31,7 @@ export const auth = {
 };
 
 export const llm = {
-  generate: (prompt, maxTokens = 512) =>
+  generate: (prompt, maxTokens = 100) =>
     api.post('/api/llm/generate', { prompt, max_tokens: maxTokens }),
 };
 
