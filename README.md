@@ -12,10 +12,6 @@
 
 An LLM chat application with GitHub OAuth, automated deployment with ArgoCD, and custom-compiled llama.cpp for running on legacy hardware (aka [my homelab's](https://github.com/navillasa/kubernetes-homelab) Pentium J5005 processor).
 
-![Monitoring](docs/images/monitoring.png)
-
-**Browse monitoring: [mini-llm-monitoring.navillasa.dev](https://mini-llm-monitoring.navillasa.dev)**
-
 ## 🏗️ Architecture
 
 ```
@@ -32,6 +28,24 @@ An LLM chat application with GitHub OAuth, automated deployment with ArgoCD, and
                    │  nginx:8080 │        │   GPT4All    │   └────────────┘
                    └─────────────┘        └──────────────┘
 ```
+
+## 📊 Monitoring
+
+![Monitoring](docs/images/monitoring.png)
+
+**Browse monitoring: [mini-llm-monitoring.navillasa.dev](https://mini-llm-monitoring.navillasa.dev)**
+
+Prometheus metrics available at `/metrics`:
+
+- `llm_requests_total` - API request counts
+- `llm_request_duration_seconds` - Request latency
+- `llm_inference_duration_seconds` - Model inference time
+- `llm_tokens_generated_total` - Total tokens generated
+- `llm_model_loaded` - Model status
+- `llm_cpu_usage_percent` - CPU utilization
+- `llm_memory_usage_bytes` - Memory usage
+- `llm_auth_requests_total` - OAuth attempts
+- `llm_rate_limit_hits_total` - Rate limit violations
 
 ## 🛠️ Technology Stack
 
@@ -120,20 +134,6 @@ When you push to `main`:
 3. **Push to Registry**: Images pushed to ghcr.io
 4. **Update Kustomization**: Image tags automatically updated in git
 5. **ArgoCD Sync**: Detects changes and deploys new version
-
-## 📊 Monitoring
-
-Prometheus metrics available at `/metrics`:
-
-- `llm_requests_total` - API request counts
-- `llm_request_duration_seconds` - Request latency
-- `llm_inference_duration_seconds` - Model inference time
-- `llm_tokens_generated_total` - Total tokens generated
-- `llm_model_loaded` - Model status
-- `llm_cpu_usage_percent` - CPU utilization
-- `llm_memory_usage_bytes` - Memory usage
-- `llm_auth_requests_total` - OAuth attempts
-- `llm_rate_limit_hits_total` - Rate limit violations
 
 ## 🔐 Security Features
 
