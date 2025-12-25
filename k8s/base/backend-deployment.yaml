@@ -77,9 +77,34 @@ spec:
                 key: JWT_SECRET
           - name: FRONTEND_URL
             valueFrom:
-              secretKeyRef:
-                name: backend-secrets
+              configMapKeyRef:
+                name: backend-config
                 key: FRONTEND_URL
+          - name: RATE_LIMIT_PER_MINUTE
+            valueFrom:
+              configMapKeyRef:
+                name: backend-config
+                key: RATE_LIMIT_PER_MINUTE
+          - name: RATE_LIMIT_PER_DAY
+            valueFrom:
+              configMapKeyRef:
+                name: backend-config
+                key: RATE_LIMIT_PER_DAY
+          - name: JWT_EXPIRATION_HOURS
+            valueFrom:
+              configMapKeyRef:
+                name: backend-config
+                key: JWT_EXPIRATION_HOURS
+          - name: LLM_MODEL_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: backend-config
+                key: LLM_MODEL_NAME
+          - name: JWT_ALGORITHM
+            valueFrom:
+              configMapKeyRef:
+                name: backend-config
+                key: JWT_ALGORITHM
         volumeMounts:
           - name: model-cache
             mountPath: /home/app/.cache

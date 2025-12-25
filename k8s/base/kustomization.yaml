@@ -6,6 +6,7 @@ namespace: mini-llm
 resources:
   - frontend-deployment.yaml
   - frontend-service.yaml
+  - backend-configmap.yaml
   - backend-external-secret.yaml
   - backend-deployment.yaml
   - backend-service.yaml
