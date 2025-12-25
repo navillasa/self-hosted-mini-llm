@@ -13,6 +13,7 @@ resources:
   - model-cache-pvc.yaml
   - ingress.yaml
   - prometheus-alerts.yaml
+  - grafana-dashboard.yaml
 
 labels:
   - pairs:
