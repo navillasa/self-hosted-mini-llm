@@ -8,9 +8,13 @@
 
 ![Chat Screenshot](docs/images/chat.png)
 
-Try it out: [mini-llm.navillasa.dev](https://mini-llm.navillasa.dev)
+**Try it out: [mini-llm.navillasa.dev](https://mini-llm.navillasa.dev)**
 
 An LLM chat application with GitHub OAuth, automated deployment with ArgoCD, and custom-compiled llama.cpp for running on legacy hardware (aka [my homelab's](https://github.com/navillasa/kubernetes-homelab) Pentium J5005 processor).
+
+![Monitoring](docs/images/monitoring.png)
+
+**Browse monitoring: [mini-llm-monitoring.navillasa.dev](https://mini-llm-monitoring.navillasa.dev)**
 
 ## 🏗️ Architecture
 
