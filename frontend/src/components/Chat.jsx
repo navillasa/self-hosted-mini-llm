@@ -150,7 +150,7 @@ export default function Chat({ user, onLogout }) {
                   <span className="text-sm font-medium">Thinking...</span>
                 </div>
                 <p className="text-xs text-gray-400">
-                  Running inference on CPU-only hardware. This may take 1-2 minutes for longer responses.
+                  Running inference on CPU-only hardware. Responses may take a few minutes.
                 </p>
               </div>
             </div>
